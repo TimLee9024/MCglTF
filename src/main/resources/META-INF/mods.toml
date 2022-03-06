@@ -23,7 +23,7 @@ version="${file.jarVersion}" #mandatory
  # A display name for the mod
 displayName="MCglTF" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
-updateJSONURL="https://raw.githubusercontent.com/TimLee9024/MCglTF/1.16.5/updates.json" #optional
+updateJSONURL="https://raw.githubusercontent.com/TimLee9024/MCglTF/1.16.5-Forge/updates.json" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="https://www.curseforge.com/minecraft/mc-mods/mcgltf/" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
