@@ -1799,16 +1799,16 @@ public class RenderedGltfModel {
 				else {
 					DefaultMaterialHandler defaultMaterialHandler = gson.fromJson(gson.toJsonTree(extras), DefaultMaterialHandler.class);
 					List<TextureModel> textureModels = gltfModel.getTextureModels();
-					int colorMap = defaultMaterialHandler.colorTexture == null ? MCglTF.getInstance().getDefaultColorMap() : obtainGlTexture(textureModels.get(defaultMaterialHandler.colorTexture.index));
+					int colorMap = defaultMaterialHandler.baseColorTexture == null ? MCglTF.getInstance().getDefaultColorMap() : obtainGlTexture(textureModels.get(defaultMaterialHandler.baseColorTexture.index));
 					int normalMap = defaultMaterialHandler.normalTexture == null ? MCglTF.getInstance().getDefaultNormalMap() : obtainGlTexture(textureModels.get(defaultMaterialHandler.normalTexture.index));
 					int specularMap = defaultMaterialHandler.specularTexture == null ? MCglTF.getInstance().getDefaultSpecularMap() : obtainGlTexture(textureModels.get(defaultMaterialHandler.specularTexture.index));
 					
-					float r = defaultMaterialHandler.color[0];
-					float g = defaultMaterialHandler.color[1];
-					float b = defaultMaterialHandler.color[2];
-					float a = defaultMaterialHandler.color[3];
+					float r = defaultMaterialHandler.baseColorFactor[0];
+					float g = defaultMaterialHandler.baseColorFactor[1];
+					float b = defaultMaterialHandler.baseColorFactor[2];
+					float a = defaultMaterialHandler.baseColorFactor[3];
 					
-					if(defaultMaterialHandler.isDoubleSided) {
+					if(defaultMaterialHandler.doubleSided) {
 						defaultMaterialHandler.preMeshDrawCommand = () -> {
 							GL13.glActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
 							GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorMap);
@@ -2000,7 +2000,7 @@ public class RenderedGltfModel {
 					tangentsAccessorData.set(index, 0, tangent[0]);
 					tangentsAccessorData.set(index, 1, tangent[1]);
 					tangentsAccessorData.set(index, 2, tangent[2]);
-					tangentsAccessorData.set(index, 3, sign);
+					tangentsAccessorData.set(index, 3, -sign);
 				}
 	
 				@Override

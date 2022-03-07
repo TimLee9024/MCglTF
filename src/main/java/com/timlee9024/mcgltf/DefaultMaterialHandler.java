@@ -8,11 +8,11 @@ public class DefaultMaterialHandler implements IMaterialHandler {
 		public int texCoord;
 	}
 	
-	public TextureInfo colorTexture;
+	public TextureInfo baseColorTexture;
 	public TextureInfo normalTexture;
 	public TextureInfo specularTexture;
-	public float[] color = {1.0F, 1.0F, 1.0F, 1.0F};
-	public boolean isDoubleSided;
+	public float[] baseColorFactor = {1.0F, 1.0F, 1.0F, 1.0F};
+	public boolean doubleSided;
 	
 	public Runnable preMeshDrawCommand;
 
@@ -20,7 +20,7 @@ public class DefaultMaterialHandler implements IMaterialHandler {
 	public int texCoordsToActiveIndex(String attribute) {
 		if(attribute.startsWith("TEXCOORD_")) {
 			int texCoord = Integer.parseInt(attribute.substring(9));
-			if(colorTexture != null && colorTexture.texCoord == texCoord) return COLOR_MAP_INDEX;
+			if(baseColorTexture != null && baseColorTexture.texCoord == texCoord) return COLOR_MAP_INDEX;
 			if(normalTexture != null && normalTexture.texCoord == texCoord) return NORMAL_MAP_INDEX;
 			if(specularTexture != null && specularTexture.texCoord == texCoord) return SPECULAR_MAP_INDEX;
 		}
