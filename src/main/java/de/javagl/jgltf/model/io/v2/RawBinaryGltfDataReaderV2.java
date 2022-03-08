@@ -158,7 +158,11 @@ public class RawBinaryGltfDataReaderV2
             }
             if (chunk.length > 0)
             {
-                chunk.data = Buffers.createSlice(data, offset, chunk.length);
+            	if(chunk.type == CHUNK_TYPE_BIN) {
+            		chunk.data = Buffers.create(chunk.length);
+            		Buffers.bufferCopy(data, offset, chunk.data, 0, chunk.length);
+            	}
+            	else chunk.data = Buffers.createSlice(data, offset, chunk.length);
             }
             offset += chunk.length;
             chunks.add(chunk);
