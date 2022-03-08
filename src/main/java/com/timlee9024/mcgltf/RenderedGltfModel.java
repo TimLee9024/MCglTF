@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.function.BiFunction;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -222,8 +221,8 @@ public class RenderedGltfModel {
 		Map<String, AccessorModel> attributes = meshPrimitiveModel.getAttributes();
 		AccessorModel positionsAccessorModel = attributes.get("POSITION");
 		if(positionsAccessorModel != null) {
-			IMaterialHandler materialParameter = obtainMaterialHandler(meshPrimitiveModel.getMaterialModel());
-			Runnable materialCommand = materialParameter.getPreMeshDrawCommand();
+			IMaterialHandler materialHandler = obtainMaterialHandler(meshPrimitiveModel.getMaterialModel());
+			Runnable materialCommand = materialHandler.getPreMeshDrawCommand();
 			if(materialCommand != null) renderCommand.add(materialCommand);
 			
 			int glVertexArray = GL30.glGenVertexArrays();
@@ -236,9 +235,8 @@ public class RenderedGltfModel {
 				List<Map<String, AccessorModel>> morphTargets = unindexed.getRight();
 				positionsAccessorModel = attributes.get("POSITION");
 				normalsAccessorModel = obtainNormalsAccessorModel(positionsAccessorModel);
-				String normalTexcoordsAttribute = materialParameter.getNormalTexCoordsAttribute();
-				if(normalTexcoordsAttribute != null) {
-					AccessorModel normalTexcoordsAccessorModel = attributes.get(normalTexcoordsAttribute);
+				if(materialHandler.hasNormalMap()) {
+					AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 					List<AccessorFloatData> targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
 					List<AccessorFloatData> normalTargetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
 					if(createPositionNormalMorphTarget(morphTargets, positionsAccessorModel, normalsAccessorModel, targetAccessorDatas, normalTargetAccessorDatas)) {
@@ -276,7 +274,7 @@ public class RenderedGltfModel {
 					
 					AccessorModel tangentsAccessorModel = obtainTangentsAccessorModel(normalsAccessorModel);
 					targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-					if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, normalTexcoordsAccessorModel, tangentsAccessorModel, normalTexcoordsAttribute, normalTargetAccessorDatas)) {
+					if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel, tangentsAccessorModel, normalTargetAccessorDatas)) {
 						bindVec3FloatMorphed(nodeModel, meshModel, renderCommand, tangentsAccessorModel, targetAccessorDatas);
 					}
 					else {
@@ -309,27 +307,20 @@ public class RenderedGltfModel {
 						GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 					}
 					
-					for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-						String name = entry.getKey();
-						int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-						if(activeIndex != -1) {
-							AccessorModel accessorModel = entry.getValue();
-							targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-							if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-								accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-							}
-							else {
-								bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-							}
-							GL13.glClientActiveTexture(activeIndex);
-							GL11.glTexCoordPointer(
-									accessorModel.getElementType().getNumComponents(),
-									accessorModel.getComponentType(),
-									accessorModel.getByteStride(),
-									accessorModel.getByteOffset());
-							GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-						}
+					targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+					if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+						texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 					}
+					else {
+						bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+					}
+					GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+					GL11.glTexCoordPointer(
+							texcoordsAccessorModel.getElementType().getNumComponents(),
+							texcoordsAccessorModel.getComponentType(),
+							texcoordsAccessorModel.getByteStride(),
+							texcoordsAccessorModel.getByteOffset());
+					GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 					
 					int mode = meshPrimitiveModel.getMode();
 					int count = positionsAccessorModel.getCount();
@@ -414,26 +405,22 @@ public class RenderedGltfModel {
 						GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 					}
 					
-					for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-						String name = entry.getKey();
-						int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-						if(activeIndex != -1) {
-							AccessorModel accessorModel = entry.getValue();
-							targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-							if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-								accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-							}
-							else {
-								bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-							}
-							GL13.glClientActiveTexture(activeIndex);
-							GL11.glTexCoordPointer(
-									accessorModel.getElementType().getNumComponents(),
-									accessorModel.getComponentType(),
-									accessorModel.getByteStride(),
-									accessorModel.getByteOffset());
-							GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+					AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
+					if(texcoordsAccessorModel != null) {
+						targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+						if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+							texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 						}
+						else {
+							bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+						}
+						GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+						GL11.glTexCoordPointer(
+								texcoordsAccessorModel.getElementType().getNumComponents(),
+								texcoordsAccessorModel.getComponentType(),
+								texcoordsAccessorModel.getByteStride(),
+								texcoordsAccessorModel.getByteOffset());
+						GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 					}
 					
 					int mode = meshPrimitiveModel.getMode();
@@ -447,13 +434,11 @@ public class RenderedGltfModel {
 			else {
 				AccessorModel tangentsAccessorModel = attributes.get("TANGENT");
 				if(tangentsAccessorModel == null) {
-					String normalTexcoordsAttribute = materialParameter.getNormalTexCoordsAttribute();
-					if(normalTexcoordsAttribute != null) {
-						AccessorModel normalTexcoordsAccessorModel = attributes.get(normalTexcoordsAttribute);
+					if(materialHandler.hasNormalMap()) {
 						Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>> unindexed = obtainUnindexed(meshPrimitiveModel);
 						attributes = unindexed.getLeft();
 						List<Map<String, AccessorModel>> morphTargets = unindexed.getRight();
-						normalTexcoordsAccessorModel = attributes.get(normalTexcoordsAttribute);
+						AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 						
 						positionsAccessorModel = attributes.get("POSITION");
 						List<AccessorFloatData> targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -484,9 +469,9 @@ public class RenderedGltfModel {
 								normalsAccessorModel.getByteOffset());
 						GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
 						
-						tangentsAccessorModel = obtainTangentsAccessorModel(meshPrimitiveModel, positionsAccessorModel, normalsAccessorModel, normalTexcoordsAccessorModel);
+						tangentsAccessorModel = obtainTangentsAccessorModel(meshPrimitiveModel, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel);
 						targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-						if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, normalTexcoordsAccessorModel, tangentsAccessorModel, normalTexcoordsAttribute)) {
+						if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel, tangentsAccessorModel)) {
 							bindVec3FloatMorphed(nodeModel, meshModel, renderCommand, tangentsAccessorModel, targetAccessorDatas);
 						}
 						else {
@@ -519,27 +504,20 @@ public class RenderedGltfModel {
 							GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 						}
 						
-						for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-							String name = entry.getKey();
-							int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-							if(activeIndex != -1) {
-								AccessorModel accessorModel = entry.getValue();
-								targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-								if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-									accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-								}
-								else {
-									bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-								}
-								GL13.glClientActiveTexture(activeIndex);
-								GL11.glTexCoordPointer(
-										accessorModel.getElementType().getNumComponents(),
-										accessorModel.getComponentType(),
-										accessorModel.getByteStride(),
-										accessorModel.getByteOffset());
-								GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-							}
+						targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+						if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+							texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 						}
+						else {
+							bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+						}
+						GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+						GL11.glTexCoordPointer(
+								texcoordsAccessorModel.getElementType().getNumComponents(),
+								texcoordsAccessorModel.getComponentType(),
+								texcoordsAccessorModel.getByteStride(),
+								texcoordsAccessorModel.getByteOffset());
+						GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 						
 						int mode = meshPrimitiveModel.getMode();
 						int count = positionsAccessorModel.getCount();
@@ -623,26 +601,22 @@ public class RenderedGltfModel {
 							GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 						}
 						
-						for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-							String name = entry.getKey();
-							int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-							if(activeIndex != -1) {
-								AccessorModel accessorModel = entry.getValue();
-								targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-								if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-									accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-								}
-								else {
-									bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-								}
-								GL13.glClientActiveTexture(activeIndex);
-								GL11.glTexCoordPointer(
-										accessorModel.getElementType().getNumComponents(),
-										accessorModel.getComponentType(),
-										accessorModel.getByteStride(),
-										accessorModel.getByteOffset());
-								GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+						AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
+						if(texcoordsAccessorModel != null) {
+							targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+							if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+								texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 							}
+							else {
+								bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+							}
+							GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+							GL11.glTexCoordPointer(
+									texcoordsAccessorModel.getElementType().getNumComponents(),
+									texcoordsAccessorModel.getComponentType(),
+									texcoordsAccessorModel.getByteStride(),
+									texcoordsAccessorModel.getByteOffset());
+							GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 						}
 						
 						int mode = meshPrimitiveModel.getMode();
@@ -731,26 +705,22 @@ public class RenderedGltfModel {
 						GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 					}
 					
-					for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-						String name = entry.getKey();
-						int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-						if(activeIndex != -1) {
-							AccessorModel accessorModel = entry.getValue();
-							targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-							if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-								accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-							}
-							else {
-								bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-							}
-							GL13.glClientActiveTexture(activeIndex);
-							GL11.glTexCoordPointer(
-									accessorModel.getElementType().getNumComponents(),
-									accessorModel.getComponentType(),
-									accessorModel.getByteStride(),
-									accessorModel.getByteOffset());
-							GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+					AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
+					if(texcoordsAccessorModel != null) {
+						targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+						if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+							texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 						}
+						else {
+							bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+						}
+						GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+						GL11.glTexCoordPointer(
+								texcoordsAccessorModel.getElementType().getNumComponents(),
+								texcoordsAccessorModel.getComponentType(),
+								texcoordsAccessorModel.getByteStride(),
+								texcoordsAccessorModel.getByteOffset());
+						GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 					}
 					
 					int mode = meshPrimitiveModel.getMode();
@@ -776,7 +746,7 @@ public class RenderedGltfModel {
 				}
 			}
 			
-			materialCommand = materialParameter.getPostMeshDrawCommand();
+			materialCommand = materialHandler.getPostMeshDrawCommand();
 			if(materialCommand != null) renderCommand.add(materialCommand);
 		}
 	}
@@ -785,8 +755,8 @@ public class RenderedGltfModel {
 		Map<String, AccessorModel> attributes = meshPrimitiveModel.getAttributes();
 		AccessorModel positionsAccessorModel = attributes.get("POSITION");
 		if(positionsAccessorModel != null) {
-			IMaterialHandler materialParameter = obtainMaterialHandler(meshPrimitiveModel.getMaterialModel());
-			Runnable materialCommand = materialParameter.getPreMeshDrawCommand();
+			IMaterialHandler materialHandler = obtainMaterialHandler(meshPrimitiveModel.getMaterialModel());
+			Runnable materialCommand = materialHandler.getPreMeshDrawCommand();
 			if(materialCommand != null) renderCommand.add(materialCommand);
 			
 			int glTransformFeedback = GL40.glGenTransformFeedbacks();
@@ -827,9 +797,8 @@ public class RenderedGltfModel {
 				List<Map<String, AccessorModel>> morphTargets = unindexed.getRight();
 				positionsAccessorModel = attributes.get("POSITION");
 				normalsAccessorModel = obtainNormalsAccessorModel(positionsAccessorModel);
-				String normalTexcoordsAttribute = materialParameter.getNormalTexCoordsAttribute();
-				if(normalTexcoordsAttribute != null) {
-					AccessorModel normalTexcoordsAccessorModel = attributes.get(normalTexcoordsAttribute);
+				if(materialHandler.hasNormalMap()) {
+					AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 					List<AccessorFloatData> targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
 					List<AccessorFloatData> normalTargetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
 					if(createPositionNormalMorphTarget(morphTargets, positionsAccessorModel, normalsAccessorModel, targetAccessorDatas, normalTargetAccessorDatas)) {
@@ -877,7 +846,7 @@ public class RenderedGltfModel {
 					
 					AccessorModel tangentsAccessorModel = obtainTangentsAccessorModel(normalsAccessorModel);
 					targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-					if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, normalTexcoordsAccessorModel, tangentsAccessorModel, normalTexcoordsAttribute, normalTargetAccessorDatas)) {
+					if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel, tangentsAccessorModel, normalTargetAccessorDatas)) {
 						bindVec3FloatMorphed(nodeModel, meshModel, skinningCommand, tangentsAccessorModel, targetAccessorDatas);
 					}
 					else {
@@ -959,27 +928,20 @@ public class RenderedGltfModel {
 						GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 					}
 					
-					for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-						String name = entry.getKey();
-						int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-						if(activeIndex != -1) {
-							AccessorModel accessorModel = entry.getValue();
-							targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-							if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-								accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-							}
-							else {
-								bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-							}
-							GL13.glClientActiveTexture(activeIndex);
-							GL11.glTexCoordPointer(
-									accessorModel.getElementType().getNumComponents(),
-									accessorModel.getComponentType(),
-									accessorModel.getByteStride(),
-									accessorModel.getByteOffset());
-							GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-						}
+					targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+					if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+						texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 					}
+					else {
+						bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+					}
+					GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+					GL11.glTexCoordPointer(
+							texcoordsAccessorModel.getElementType().getNumComponents(),
+							texcoordsAccessorModel.getComponentType(),
+							texcoordsAccessorModel.getByteStride(),
+							texcoordsAccessorModel.getByteOffset());
+					GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 					
 					int mode = meshPrimitiveModel.getMode();
 					renderCommand.add(() -> {
@@ -1122,26 +1084,22 @@ public class RenderedGltfModel {
 						GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 					}
 					
-					for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-						String name = entry.getKey();
-						int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-						if(activeIndex != -1) {
-							AccessorModel accessorModel = entry.getValue();
-							targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-							if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-								accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-							}
-							else {
-								bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-							}
-							GL13.glClientActiveTexture(activeIndex);
-							GL11.glTexCoordPointer(
-									accessorModel.getElementType().getNumComponents(),
-									accessorModel.getComponentType(),
-									accessorModel.getByteStride(),
-									accessorModel.getByteOffset());
-							GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+					AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
+					if(texcoordsAccessorModel != null) {
+						targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+						if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+							texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 						}
+						else {
+							bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+						}
+						GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+						GL11.glTexCoordPointer(
+								texcoordsAccessorModel.getElementType().getNumComponents(),
+								texcoordsAccessorModel.getComponentType(),
+								texcoordsAccessorModel.getByteStride(),
+								texcoordsAccessorModel.getByteOffset());
+						GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 					}
 					
 					int mode = meshPrimitiveModel.getMode();
@@ -1154,9 +1112,7 @@ public class RenderedGltfModel {
 			else {
 				AccessorModel tangentsAccessorModel = attributes.get("TANGENT");
 				if(tangentsAccessorModel == null) {
-					String normalTexcoordsAttribute = materialParameter.getNormalTexCoordsAttribute();
-					if(normalTexcoordsAttribute != null) {
-						AccessorModel normalTexcoordsAccessorModel = attributes.get(normalTexcoordsAttribute);
+					if(materialHandler.hasNormalMap()) {
 						Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>> unindexed = obtainUnindexed(meshPrimitiveModel);
 						attributes = unindexed.getLeft();
 						
@@ -1183,7 +1139,7 @@ public class RenderedGltfModel {
 						GL20.glEnableVertexAttribArray(skinning_weight);
 						
 						List<Map<String, AccessorModel>> morphTargets = unindexed.getRight();
-						normalTexcoordsAccessorModel = attributes.get(normalTexcoordsAttribute);
+						AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 						
 						positionsAccessorModel = attributes.get("POSITION");
 						List<AccessorFloatData> targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -1219,9 +1175,9 @@ public class RenderedGltfModel {
 								normalsAccessorModel.getByteOffset());
 						GL20.glEnableVertexAttribArray(skinning_normal);
 						
-						tangentsAccessorModel = obtainTangentsAccessorModel(meshPrimitiveModel, positionsAccessorModel, normalsAccessorModel, normalTexcoordsAccessorModel);
+						tangentsAccessorModel = obtainTangentsAccessorModel(meshPrimitiveModel, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel);
 						targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-						if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, normalTexcoordsAccessorModel, tangentsAccessorModel, normalTexcoordsAttribute)) {
+						if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel, tangentsAccessorModel)) {
 							bindVec3FloatMorphed(nodeModel, meshModel, skinningCommand, tangentsAccessorModel, targetAccessorDatas);
 						}
 						else {
@@ -1303,27 +1259,20 @@ public class RenderedGltfModel {
 							GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 						}
 						
-						for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-							String name = entry.getKey();
-							int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-							if(activeIndex != -1) {
-								AccessorModel accessorModel = entry.getValue();
-								targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-								if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-									accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-								}
-								else {
-									bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-								}
-								GL13.glClientActiveTexture(activeIndex);
-								GL11.glTexCoordPointer(
-										accessorModel.getElementType().getNumComponents(),
-										accessorModel.getComponentType(),
-										accessorModel.getByteStride(),
-										accessorModel.getByteOffset());
-								GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-							}
+						targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+						if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+							texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 						}
+						else {
+							bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+						}
+						GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+						GL11.glTexCoordPointer(
+								texcoordsAccessorModel.getElementType().getNumComponents(),
+								texcoordsAccessorModel.getComponentType(),
+								texcoordsAccessorModel.getByteStride(),
+								texcoordsAccessorModel.getByteOffset());
+						GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 						
 						int mode = meshPrimitiveModel.getMode();
 						renderCommand.add(() -> {
@@ -1485,26 +1434,22 @@ public class RenderedGltfModel {
 							GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 						}
 						
-						for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-							String name = entry.getKey();
-							int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-							if(activeIndex != -1) {
-								AccessorModel accessorModel = entry.getValue();
-								targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-								if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-									accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-								}
-								else {
-									bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-								}
-								GL13.glClientActiveTexture(activeIndex);
-								GL11.glTexCoordPointer(
-										accessorModel.getElementType().getNumComponents(),
-										accessorModel.getComponentType(),
-										accessorModel.getByteStride(),
-										accessorModel.getByteOffset());
-								GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+						AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
+						if(texcoordsAccessorModel != null) {
+							targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+							if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+								texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 							}
+							else {
+								bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+							}
+							GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+							GL11.glTexCoordPointer(
+									texcoordsAccessorModel.getElementType().getNumComponents(),
+									texcoordsAccessorModel.getComponentType(),
+									texcoordsAccessorModel.getByteStride(),
+									texcoordsAccessorModel.getByteOffset());
+							GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 						}
 						
 						int mode = meshPrimitiveModel.getMode();
@@ -1668,26 +1613,22 @@ public class RenderedGltfModel {
 						GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 					}
 					
-					for(Entry<String, AccessorModel> entry : attributes.entrySet()) {
-						String name = entry.getKey();
-						int activeIndex = materialParameter.texCoordsToActiveIndex(name);
-						if(activeIndex != -1) {
-							AccessorModel accessorModel = entry.getValue();
-							targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-							if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, name)) {
-								accessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, accessorModel, targetAccessorDatas);
-							}
-							else {
-								bindArrayBufferViewModel(accessorModel.getBufferViewModel());
-							}
-							GL13.glClientActiveTexture(activeIndex);
-							GL11.glTexCoordPointer(
-									accessorModel.getElementType().getNumComponents(),
-									accessorModel.getComponentType(),
-									accessorModel.getByteStride(),
-									accessorModel.getByteOffset());
-							GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+					AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
+					if(texcoordsAccessorModel != null) {
+						targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+						if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+							texcoordsAccessorModel = bindTexcoordMorphed(nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 						}
+						else {
+							bindArrayBufferViewModel(texcoordsAccessorModel.getBufferViewModel());
+						}
+						GL13.glClientActiveTexture(IMaterialHandler.COLOR_MAP_INDEX);
+						GL11.glTexCoordPointer(
+								texcoordsAccessorModel.getElementType().getNumComponents(),
+								texcoordsAccessorModel.getComponentType(),
+								texcoordsAccessorModel.getByteStride(),
+								texcoordsAccessorModel.getByteOffset());
+						GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 					}
 					
 					int mode = meshPrimitiveModel.getMode();
@@ -1712,7 +1653,7 @@ public class RenderedGltfModel {
 				}
 			}
 			
-			materialCommand = materialParameter.getPostMeshDrawCommand();
+			materialCommand = materialHandler.getPostMeshDrawCommand();
 			if(materialCommand != null) renderCommand.add(materialCommand);
 		}
 	}
@@ -2424,7 +2365,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel, AccessorModel tangentsAccessorModel, String texcoordsAttribute) {
+	private boolean createTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel, AccessorModel tangentsAccessorModel) {
 		boolean isMorphableAttribute = false;
 		int count = positionsAccessorModel.getCount();
 		int numFaces = count / 3;
@@ -2442,7 +2383,7 @@ public class RenderedGltfModel {
 				accessorModel = morphTarget.get("NORMAL");
 				if(accessorModel != null) {
 					AccessorFloatData deltaNormalsAccessorData = AccessorDatas.createFloat(accessorModel);
-					accessorModel = morphTarget.get(texcoordsAttribute);
+					accessorModel = morphTarget.get("TEXCOORD_0");
 					if(accessorModel != null) {
 						AccessorData deltaTexcoordsAccessorData = AccessorDatas.create(accessorModel);
 						MikktspaceTangentGenerator.genTangSpaceDefault(new MikkTSpaceContext() {
@@ -2548,7 +2489,7 @@ public class RenderedGltfModel {
 					}
 				}
 				else {
-					accessorModel = morphTarget.get(texcoordsAttribute);
+					accessorModel = morphTarget.get("TEXCOORD_0");
 					if(accessorModel != null) {
 						AccessorData deltaTexcoordsAccessorData = AccessorDatas.create(accessorModel);
 						MikktspaceTangentGenerator.genTangSpaceDefault(new MikkTSpaceContext() {
@@ -2661,7 +2602,7 @@ public class RenderedGltfModel {
 				AccessorFloatData targetAccessorData = AccessorDatas.createFloat(AccessorModelCreation.createAccessorModel(GL11.GL_FLOAT, count, ElementType.VEC3, ""));
 				targetAccessorDatas.add(targetAccessorData);
 				AccessorFloatData deltaNormalsAccessorData = AccessorDatas.createFloat(accessorModel);
-				accessorModel = morphTarget.get(texcoordsAttribute);
+				accessorModel = morphTarget.get("TEXCOORD_0");
 				if(accessorModel != null) {
 					AccessorData deltaTexcoordsAccessorData = AccessorDatas.create(accessorModel);
 					MikktspaceTangentGenerator.genTangSpaceDefault(new MikkTSpaceContext() {
@@ -2767,7 +2708,7 @@ public class RenderedGltfModel {
 				}
 				continue;
 			}
-			accessorModel = morphTarget.get(texcoordsAttribute);
+			accessorModel = morphTarget.get("TEXCOORD_0");
 			if(accessorModel != null) {
 				isMorphableAttribute = true;
 				AccessorFloatData targetAccessorData = AccessorDatas.createFloat(AccessorModelCreation.createAccessorModel(GL11.GL_FLOAT, count, ElementType.VEC3, ""));
@@ -2829,7 +2770,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel, AccessorModel tangentsAccessorModel, String texcoordsAttribute, List<AccessorFloatData> normalTargetAccessorDatas) {
+	private boolean createTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel, AccessorModel tangentsAccessorModel, List<AccessorFloatData> normalTargetAccessorDatas) {
 		boolean isMorphableAttribute = false;
 		int count = positionsAccessorModel.getCount();
 		int numFaces = count / 3;
@@ -2846,7 +2787,7 @@ public class RenderedGltfModel {
 				AccessorFloatData targetAccessorData = AccessorDatas.createFloat(AccessorModelCreation.createAccessorModel(GL11.GL_FLOAT, count, ElementType.VEC3, ""));
 				targetAccessorDatas.add(targetAccessorData);
 				AccessorFloatData deltaPositionsAccessorData = AccessorDatas.createFloat(accessorModel);
-				accessorModel = morphTarget.get(texcoordsAttribute);
+				accessorModel = morphTarget.get("TEXCOORD_0");
 				if(accessorModel != null) {
 					AccessorData deltaTexcoordsAccessorData = AccessorDatas.create(accessorModel);
 					MikktspaceTangentGenerator.genTangSpaceDefault(new MikkTSpaceContext() {
@@ -2952,7 +2893,7 @@ public class RenderedGltfModel {
 				}
 				continue;
 			}
-			accessorModel = morphTarget.get(texcoordsAttribute);
+			accessorModel = morphTarget.get("TEXCOORD_0");
 			if(accessorModel != null) {
 				isMorphableAttribute = true;
 				AccessorFloatData targetAccessorData = AccessorDatas.createFloat(AccessorModelCreation.createAccessorModel(GL11.GL_FLOAT, count, ElementType.VEC3, ""));
@@ -3056,10 +2997,10 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createTexcoordMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, String attributeName) {
+	private boolean createTexcoordMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas) {
 		boolean isMorphableAttribute = false;
 		for(Map<String, AccessorModel> morphTarget : morphTargets) {
-			AccessorModel accessorModel = morphTarget.get(attributeName);
+			AccessorModel accessorModel = morphTarget.get("TEXCOORD_0");
 			if(accessorModel != null) {
 				isMorphableAttribute = true;
 				AccessorFloatData morphAccessorData = texcoordsMorphTargetAccessorModelToAccessorData.get(accessorModel);

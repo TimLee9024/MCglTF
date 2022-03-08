@@ -31,20 +31,16 @@ public interface IMaterialHandler {
 		
 	};
 	
-	default int texCoordsToActiveIndex(String attribute) {
-		return -1;
-	}
-	
-	default String getNormalTexCoordsAttribute() {
-		return null;
+	default boolean hasNormalMap() {
+		return false;
 	}
 	
 	default Runnable getPreMeshDrawCommand() {
 		return null;
-	};
+	}
 	
 	default Runnable getPostMeshDrawCommand() {
 		return null;
-	};
+	}
 
 }
