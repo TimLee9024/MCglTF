@@ -13,6 +13,7 @@ The example codes for rendering Block, Item, and Entity
 - [x] Vertex colors
 - [x] Materials ([Require ShaderMod and supported ShaderPack for PBR](https://github.com/TimLee9024/MCglTF/wiki/How-to-make-PBR-Materials-working-with-Optifine))
 - [x] Textures
+- [ ] Mutiple texture coordinates (For compatibility reason with Vanilla)
 - [x] Rig
 - [x] Animations (multiple)
 - [x] Morph targets
