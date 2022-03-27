@@ -81,7 +81,8 @@ public class RenderedGltfModel {
 	
 	public final GltfRenderData gltfRenderData = new GltfRenderData();
 	
-	private final Map<NodeModel, List<Runnable>> nodeModelToNodeCommand = new IdentityHashMap<NodeModel, List<Runnable>>();
+	private final Map<NodeModel, List<Runnable>> nodeModelToRootRenderCommands = new IdentityHashMap<NodeModel, List<Runnable>>();
+	private final Map<NodeModel, List<Runnable>> nodeModelToRootSkinningCommands = new IdentityHashMap<NodeModel, List<Runnable>>();
 	private final Map<MaterialModel, IMaterialHandler> materialModelToMaterialHandler = new IdentityHashMap<MaterialModel, IMaterialHandler>();
 	private final Map<AccessorModel, AccessorModel> positionsAccessorModelToNormalsAccessorModel = new IdentityHashMap<AccessorModel, AccessorModel>();
 	private final Map<AccessorModel, AccessorModel> normalsAccessorModelToTangentsAccessorModel = new IdentityHashMap<AccessorModel, AccessorModel>();
@@ -97,43 +98,49 @@ public class RenderedGltfModel {
 		this.gltfModel = gltfModel;
 		List<SceneModel> sceneModels = gltfModel.getSceneModels();
 		sceneCommands = new ArrayList<List<Runnable>>(sceneModels.size());
-		gltfModel.getSceneModels().forEach((sceneModel) -> {
-			List<Runnable> commands = new ArrayList<Runnable>();
-			sceneCommands.add(commands);
+		for(SceneModel sceneModel : sceneModels) {
+			List<Runnable> renderCommands = new ArrayList<Runnable>();
+			List<Runnable> skinningCommands = new ArrayList<Runnable>();
+			
 			for(NodeModel nodeModel : sceneModel.getNodeModels()) {
-				List<Runnable> nodeCommands = nodeModelToNodeCommand.get(nodeModel);
-				if(nodeCommands == null) {
-					nodeCommands = new ArrayList<Runnable>();
-					List<Runnable> renderCommands = new ArrayList<Runnable>();
-					List<Runnable> skinningCommands = new ArrayList<Runnable>();
-					processNodeModel(nodeModel, renderCommands, skinningCommands);
-					if(!skinningCommands.isEmpty()) {
-						nodeCommands.add(() -> {
-							int currentProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-							GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
-							GL20.glUseProgram(MCglTF.getInstance().getGlProgramSkinnig());
-							skinningCommands.forEach((command) -> command.run());
-							GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
-							GL30.glBindVertexArray(0);
-							GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
-							GL20.glUseProgram(currentProgram);
-							GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
-						});
-					}
-					if(!renderCommands.isEmpty()) {
-						nodeCommands.add(() -> {
-							renderCommands.forEach((command) -> command.run());
-							GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-							GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-							GL30.glBindVertexArray(0);
-						});
-					}
-					nodeModelToNodeCommand.put(nodeModel, nodeCommands);
+				List<Runnable> rootRenderCommands = nodeModelToRootRenderCommands.get(nodeModel);
+				List<Runnable> rootSkinningCommands;
+				if(rootRenderCommands == null) {
+					rootRenderCommands = new ArrayList<Runnable>();
+					rootSkinningCommands = new ArrayList<Runnable>();
+					processNodeModel(nodeModel, rootRenderCommands, rootSkinningCommands);
+					nodeModelToRootRenderCommands.put(nodeModel, rootRenderCommands);
+					nodeModelToRootSkinningCommands.put(nodeModel, rootSkinningCommands);
 				}
-				commands.addAll(nodeCommands);
+				else {
+					rootSkinningCommands = nodeModelToRootSkinningCommands.get(nodeModel);
+				}
+				renderCommands.addAll(rootRenderCommands);
+				skinningCommands.addAll(rootSkinningCommands);
 			}
-			commands.add(() -> nodeGlobalTransformLookup.clear());
-		});
+			
+			List<Runnable> commands = new ArrayList<Runnable>();
+			if(!skinningCommands.isEmpty()) {
+				commands.add(() -> {
+					int currentProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+					GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
+					GL20.glUseProgram(MCglTF.getInstance().getGlProgramSkinnig());
+					skinningCommands.forEach((command) -> command.run());
+					GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
+					GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
+					GL20.glUseProgram(currentProgram);
+					GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
+				});
+			}
+			commands.addAll(renderCommands);
+			commands.add(() -> {
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+				GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+				GL30.glBindVertexArray(0);
+				nodeGlobalTransformLookup.clear();
+			});
+			sceneCommands.add(commands);
+		}
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
@@ -183,7 +190,7 @@ public class RenderedGltfModel {
 					processMeshPrimitiveModel(nodeModel, meshModel, meshPrimitiveModel, nodeRenderCommands, nodeSkinningCommands);
 				}
 			}
-			nodeRenderCommands.add(() -> GL11.glPopMatrix());
+			nodeRenderCommands.add(GL11::glPopMatrix);
 		}
 		else {
 			if(!nodeModel.getMeshModels().isEmpty()) {
@@ -193,7 +200,7 @@ public class RenderedGltfModel {
 						processMeshPrimitiveModel(nodeModel, meshModel, meshPrimitiveModel, nodeRenderCommands);
 					}
 				}
-				nodeRenderCommands.add(() -> GL11.glPopMatrix());
+				nodeRenderCommands.add(GL11::glPopMatrix);
 			}
 		}
 		nodeModel.getChildren().forEach((childNode) -> processNodeModel(childNode, nodeRenderCommands, nodeSkinningCommands));
