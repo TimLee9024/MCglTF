@@ -12,7 +12,8 @@ public class DefaultMaterialHandler implements IMaterialHandler {
 	public float[] baseColorFactor = {1.0F, 1.0F, 1.0F, 1.0F};
 	public boolean doubleSided;
 	
-	public Runnable preMeshDrawCommand;
+	public Runnable vanillaPreMeshDrawCommand;
+	public Runnable shaderModPreMeshDrawCommand;
 
 	@Override
 	public boolean hasNormalMap() {
@@ -20,8 +21,13 @@ public class DefaultMaterialHandler implements IMaterialHandler {
 	}
 
 	@Override
-	public Runnable getPreMeshDrawCommand() {
-		return preMeshDrawCommand;
+	public Runnable getVanillaPreMeshDrawCommand() {
+		return vanillaPreMeshDrawCommand;
+	}
+
+	@Override
+	public Runnable getShaderModPreMeshDrawCommand() {
+		return shaderModPreMeshDrawCommand;
 	}
 
 }

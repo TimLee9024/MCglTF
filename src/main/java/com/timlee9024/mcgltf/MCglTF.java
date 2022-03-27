@@ -54,6 +54,8 @@ public class MCglTF {
 	private final List<GltfRenderData> gltfRenderDatas = new ArrayList<GltfRenderData>();
 	private final Map<ResourceLocation, BiFunction<RenderedGltfModel, MaterialModel, IMaterialHandler>> materialHandlerFactories = new HashMap<ResourceLocation, BiFunction<RenderedGltfModel, MaterialModel, IMaterialHandler>>();
 	
+	public static int CURRENT_PROGRAM;
+	
 	public MCglTF() {
 		INSTANCE = this;
 		//Make sure the mod being absent on the other network side does not cause the client to display the server as incompatible

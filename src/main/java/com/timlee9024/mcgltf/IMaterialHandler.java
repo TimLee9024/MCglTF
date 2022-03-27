@@ -16,7 +16,16 @@ public interface IMaterialHandler {
 	IMaterialHandler DEFAULT_INSTANCE = new IMaterialHandler() {
 		
 		@Override
-		public Runnable getPreMeshDrawCommand() {
+		public Runnable getVanillaPreMeshDrawCommand() {
+			return () -> {
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				GL11.glEnable(GL11.GL_CULL_FACE);
+			};
+		}
+
+		@Override
+		public Runnable getShaderModPreMeshDrawCommand() {
 			return () -> {
 				GL13.glActiveTexture(COLOR_MAP_INDEX);
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
@@ -35,11 +44,19 @@ public interface IMaterialHandler {
 		return false;
 	}
 	
-	default Runnable getPreMeshDrawCommand() {
+	default Runnable getVanillaPreMeshDrawCommand() {
 		return null;
 	}
 	
-	default Runnable getPostMeshDrawCommand() {
+	default Runnable getVanillaPostMeshDrawCommand() {
+		return null;
+	}
+	
+	default Runnable getShaderModPreMeshDrawCommand() {
+		return null;
+	}
+	
+	default Runnable getShaderModPostMeshDrawCommand() {
 		return null;
 	}
 
