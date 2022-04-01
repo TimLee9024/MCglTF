@@ -1,11 +1,10 @@
 {
 	"homepage": "https://www.curseforge.com/minecraft/mc-mods/mcgltf/",
-	"1.16.5": {
-		"1.16.5-Forge-1.1.0.0": "This update break compatibility with previous version, please visit homepage for more info.",
-		"1.16.5-Forge-1.0.0.0": "Initial release"
+	"1.18.2": {
+		"1.18.2-Forge-1.0.0.0": "Initial release"
 	},
 	"promos": {
-		"1.16.5-latest": "1.16.5-Forge-1.1.0.0",
-		"1.16.5-recommended": "1.16.5-Forge-1.1.0.0"
+		"1.18.2-latest": "1.18.2-Forge-1.0.0.0",
+		"1.18.2-recommended": "1.18.2-Forge-1.0.0.0"
 	}
 }

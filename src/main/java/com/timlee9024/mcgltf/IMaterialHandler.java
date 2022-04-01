@@ -2,6 +2,7 @@ package com.timlee9024.mcgltf;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL20;
 
 public interface IMaterialHandler {
 
@@ -19,7 +20,7 @@ public interface IMaterialHandler {
 		public Runnable getVanillaPreMeshDrawCommand() {
 			return () -> {
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				GL20.glVertexAttrib4f(RenderedGltfModel.vaColor, 1.0F, 1.0F, 1.0F, 1.0F);
 				GL11.glEnable(GL11.GL_CULL_FACE);
 			};
 		}
@@ -33,7 +34,7 @@ public interface IMaterialHandler {
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultNormalMap());
 				GL13.glActiveTexture(SPECULAR_MAP_INDEX);
 				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultSpecularMap());
-				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				GL20.glVertexAttrib4f(RenderedGltfModel.vaColor, 1.0F, 1.0F, 1.0F, 1.0F);
 				GL11.glEnable(GL11.GL_CULL_FACE);
 			};
 		}

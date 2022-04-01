@@ -22,7 +22,7 @@ The example codes for rendering Block, Item, and Entity
 ## System requirements
 - OpenGL 4.3 and higher
 ## Known issues
-- `1.16.5 with Optifine` If you put any Item in the Item Frame, the normal maps of that Item model will not taking any effect. Since without MCglTF installed, Vanilla model will also have this problem. It is a bug that haven't fixed by Optifine yet.
+- `1.16.5+ with Optifine` If you put any Item in the Item Frame, the normal maps of that Item model will not taking any effect. Since without MCglTF installed, Vanilla model will also have this problem. It is a bug that haven't fixed by Optifine yet.
 ## Credit
 - JglTF by javagl : https://github.com/javagl/JglTF
 - Mikk Tangent Space Generator by jMonkeyEngine : https://github.com/jMonkeyEngine/jmonkeyengine

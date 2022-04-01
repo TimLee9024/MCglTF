@@ -1,6 +1,6 @@
 package com.timlee9024.mcgltf;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public interface IGltfModelReceiver {
 
