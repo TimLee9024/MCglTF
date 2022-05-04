@@ -54,7 +54,15 @@ import net.minecraft.util.ResourceLocation;
 public class RenderedGltfModel {
 
 	/**
-	 * ShaderMod Tangent Attribute location, this may change in different Minecraft version.</br>
+	 * ShaderMod attribute location for middle UV coordinates, used for parallax occlusion mapping.</br>
+	 * This may change in different Minecraft version.</br>
+	 * <a href="https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt">optifine/shaders.txt</a>
+	 */
+	public static final int mc_midTexCoord = 11;
+	
+	/**
+	 * ShaderMod attribute location for Tangent.</br>
+	 * This may change in different Minecraft version.</br>
 	 * <a href="https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt">optifine/shaders.txt</a>
 	 */
 	public static final int at_tangent = 12;
@@ -132,6 +140,7 @@ public class RenderedGltfModel {
 					GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
 				});
 			}
+			commands.add(() -> GL20.glVertexAttrib2f(mc_midTexCoord, 1.0F, 1.0F));
 			commands.addAll(renderCommands);
 			commands.add(() -> {
 				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
