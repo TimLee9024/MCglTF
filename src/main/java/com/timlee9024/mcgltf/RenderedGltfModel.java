@@ -54,7 +54,15 @@ import net.minecraft.util.ResourceLocation;
 public class RenderedGltfModel {
 
 	/**
-	 * ShaderMod Tangent Attribute location, this may change in different Minecraft version.</br>
+	 * ShaderMod attribute location for middle UV coordinates, used for parallax occlusion mapping.</br>
+	 * This may change in different Minecraft version.</br>
+	 * <a href="https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt">optifine/shaders.txt</a>
+	 */
+	public static final int mc_midTexCoord = 12;
+	
+	/**
+	 * ShaderMod attribute location for Tangent.</br>
+	 * This may change in different Minecraft version.</br>
 	 * <a href="https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt">optifine/shaders.txt</a>
 	 */
 	public static final int at_tangent = 13;
@@ -103,10 +111,21 @@ public class RenderedGltfModel {
 		vanillaSceneCommands = new ArrayList<List<Runnable>>(sceneModels.size());
 		shaderModSceneCommands = new ArrayList<List<Runnable>>(sceneModels.size());
 		
+		Runnable midTexCoordCommand = () -> GL20.glVertexAttrib2f(mc_midTexCoord, 1.0F, 1.0F);
+		
+		Runnable clearCommand = () -> {
+			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+			GL30.glBindVertexArray(0);
+			nodeGlobalTransformLookup.clear();
+		};
+		
 		for(SceneModel sceneModel : sceneModels) {
 			List<Runnable> skinningCommands = new ArrayList<Runnable>();
 			List<Runnable> vanillaRenderCommands = new ArrayList<Runnable>();
 			List<Runnable> shaderModRenderCommands = new ArrayList<Runnable>();
+			
+			shaderModRenderCommands.add(midTexCoordCommand);
 			
 			for(NodeModel nodeModel : sceneModel.getNodeModels()) {
 				List<Runnable> rootSkinningCommands = nodeModelToRootSkinningCommands.get(nodeModel);
@@ -147,12 +166,6 @@ public class RenderedGltfModel {
 			}
 			vanillaCommands.addAll(vanillaRenderCommands);
 			shaderModCommands.addAll(shaderModRenderCommands);
-			Runnable clearCommand = () -> {
-				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-				GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
-				GL30.glBindVertexArray(0);
-				nodeGlobalTransformLookup.clear();
-			};
 			vanillaCommands.add(clearCommand);
 			shaderModCommands.add(clearCommand);
 			vanillaSceneCommands.add(vanillaCommands);
