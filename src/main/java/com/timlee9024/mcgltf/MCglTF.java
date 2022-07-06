@@ -159,7 +159,7 @@ public class MCglTF {
 						ResourceLocation modelLocation = receiver.getModelLocation();
 						RenderedGltfModel renderedModel = INSTANCE.renderedGltfModels.get(modelLocation);
 						if(renderedModel == null) {
-							renderedModel = new RenderedGltfModel(new GltfModelReader().readWithoutReferences(p_10758_.getResource(modelLocation).getInputStream()));
+							renderedModel = new RenderedGltfModel(new GltfModelReader().readWithoutReferences(p_10758_.getResource(modelLocation).orElseThrow().open()));
 							INSTANCE.renderedGltfModels.put(modelLocation, renderedModel);
 							INSTANCE.gltfRenderDatas.add(renderedModel.gltfRenderData);
 						}
@@ -203,7 +203,7 @@ public class MCglTF {
 		ByteBuffer bufferData = loadedBufferResources.get(location);
 		if(bufferData == null) {
 			try {
-				bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getInstance().getResourceManager().getResource(location).getInputStream()));
+				bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getInstance().getResourceManager().getResource(location).orElseThrow().open()));
 				loadedBufferResources.put(location, bufferData);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -216,7 +216,7 @@ public class MCglTF {
 		ByteBuffer bufferData = loadedImageResources.get(location);
 		if(bufferData == null) {
 			try {
-				bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getInstance().getResourceManager().getResource(location).getInputStream()));
+				bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getInstance().getResourceManager().getResource(location).orElseThrow().open()));
 				loadedImageResources.put(location, bufferData);
 			} catch (IOException e) {
 				e.printStackTrace();
