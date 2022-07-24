@@ -67,21 +67,21 @@ public class RenderedGltfModel {
 	 */
 	public static final int at_tangent = 13;
 	
-	private static final int skinning_joint = 0;
-	private static final int skinning_weight = 1;
-	private static final int skinning_position = 2;
-	private static final int skinning_normal = 3;
-	private static final int skinning_tangent = 4;
+	protected static final int skinning_joint = 0;
+	protected static final int skinning_weight = 1;
+	protected static final int skinning_position = 2;
+	protected static final int skinning_normal = 3;
+	protected static final int skinning_tangent = 4;
 	
-	private static final int skinning_out_position = 0;
-	private static final int skinning_out_normal = 1;
-	private static final int skinning_out_tangent = 2;
+	protected static final int skinning_out_position = 0;
+	protected static final int skinning_out_normal = 1;
+	protected static final int skinning_out_tangent = 2;
 	
-	private static FloatBuffer uniformFloatBuffer = null;
+	protected static FloatBuffer uniformFloatBuffer = null;
     
-	private static final FloatBuffer BUF_FLOAT_16 = BufferUtils.createFloatBuffer(16);
+	protected static final FloatBuffer BUF_FLOAT_16 = BufferUtils.createFloatBuffer(16);
 	
-	private static final Map<NodeModel, float[]> nodeGlobalTransformLookup = new IdentityHashMap<NodeModel, float[]>();
+	protected static final Map<NodeModel, float[]> nodeGlobalTransformLookup = new IdentityHashMap<NodeModel, float[]>();
 	
 	public final GltfModel gltfModel;
 	
@@ -91,26 +91,29 @@ public class RenderedGltfModel {
 	
 	public final GltfRenderData gltfRenderData = new GltfRenderData();
 	
-	private final Map<NodeModel, List<Runnable>> nodeModelToRootSkinningCommands = new IdentityHashMap<NodeModel, List<Runnable>>();
-	private final Map<NodeModel, List<Runnable>> nodeModelToVanillaRootRenderCommands = new IdentityHashMap<NodeModel, List<Runnable>>();
-	private final Map<NodeModel, List<Runnable>> nodeModelToShaderModRootRenderCommands = new IdentityHashMap<NodeModel, List<Runnable>>();
-	private final Map<MaterialModel, IMaterialHandler> materialModelToMaterialHandler = new IdentityHashMap<MaterialModel, IMaterialHandler>();
-	private final Map<AccessorModel, AccessorModel> positionsAccessorModelToNormalsAccessorModel = new IdentityHashMap<AccessorModel, AccessorModel>();
-	private final Map<AccessorModel, AccessorModel> normalsAccessorModelToTangentsAccessorModel = new IdentityHashMap<AccessorModel, AccessorModel>();
-	private final Map<AccessorModel, AccessorModel> colorsAccessorModelVec3ToVec4 = new IdentityHashMap<AccessorModel, AccessorModel>();
-	private final Map<AccessorModel, AccessorFloatData> colorsMorphTargetAccessorModelToAccessorData = new IdentityHashMap<AccessorModel, AccessorFloatData>();
-	private final Map<AccessorModel, AccessorFloatData> texcoordsMorphTargetAccessorModelToAccessorData = new IdentityHashMap<AccessorModel, AccessorFloatData>();
-	private final Map<MeshPrimitiveModel, AccessorModel> meshPrimitiveModelToTangentsAccessorModel = new IdentityHashMap<MeshPrimitiveModel, AccessorModel>();
-	private final Map<MeshPrimitiveModel, Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>>> meshPrimitiveModelToUnindexed = new IdentityHashMap<MeshPrimitiveModel, Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>>>();
-	private final Map<BufferViewModel, Integer> bufferViewModelToGlBufferView = new IdentityHashMap<BufferViewModel, Integer>();
-	private final Map<TextureModel, Integer> textureModelToGlTexture = new IdentityHashMap<TextureModel, Integer>();
+	protected final Map<NodeModel, List<Runnable>> nodeModelToRootSkinningCommands = new IdentityHashMap<NodeModel, List<Runnable>>();
+	protected final Map<NodeModel, List<Runnable>> nodeModelToVanillaRootRenderCommands = new IdentityHashMap<NodeModel, List<Runnable>>();
+	protected final Map<NodeModel, List<Runnable>> nodeModelToShaderModRootRenderCommands = new IdentityHashMap<NodeModel, List<Runnable>>();
+	protected final Map<MaterialModel, IMaterialHandler> materialModelToMaterialHandler = new IdentityHashMap<MaterialModel, IMaterialHandler>();
+	protected final Map<AccessorModel, AccessorModel> positionsAccessorModelToNormalsAccessorModel = new IdentityHashMap<AccessorModel, AccessorModel>();
+	protected final Map<AccessorModel, AccessorModel> normalsAccessorModelToTangentsAccessorModel = new IdentityHashMap<AccessorModel, AccessorModel>();
+	protected final Map<AccessorModel, AccessorModel> colorsAccessorModelVec3ToVec4 = new IdentityHashMap<AccessorModel, AccessorModel>();
+	protected final Map<AccessorModel, AccessorFloatData> colorsMorphTargetAccessorModelToAccessorData = new IdentityHashMap<AccessorModel, AccessorFloatData>();
+	protected final Map<AccessorModel, AccessorFloatData> texcoordsMorphTargetAccessorModelToAccessorData = new IdentityHashMap<AccessorModel, AccessorFloatData>();
+	protected final Map<MeshPrimitiveModel, AccessorModel> meshPrimitiveModelToTangentsAccessorModel = new IdentityHashMap<MeshPrimitiveModel, AccessorModel>();
+	protected final Map<MeshPrimitiveModel, Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>>> meshPrimitiveModelToUnindexed = new IdentityHashMap<MeshPrimitiveModel, Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>>>();
+	protected final Map<BufferViewModel, Integer> bufferViewModelToGlBufferView = new IdentityHashMap<BufferViewModel, Integer>();
+	protected final Map<TextureModel, Integer> textureModelToGlTexture = new IdentityHashMap<TextureModel, Integer>();
 	
 	public RenderedGltfModel(GltfModel gltfModel) {
 		this.gltfModel = gltfModel;
 		List<SceneModel> sceneModels = gltfModel.getSceneModels();
 		vanillaSceneCommands = new ArrayList<List<Runnable>>(sceneModels.size());
 		shaderModSceneCommands = new ArrayList<List<Runnable>>(sceneModels.size());
-		
+		processSceneModels(sceneModels);
+	}
+	
+	protected void processSceneModels(List<SceneModel> sceneModels) {
 		Runnable midTexCoordCommand = () -> GL20.glVertexAttrib2f(mc_midTexCoord, 1.0F, 1.0F);
 		
 		Runnable clearCommand = () -> {
@@ -155,7 +158,7 @@ public class RenderedGltfModel {
 				Runnable skinningCommand = () -> {
 					GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
 					GL20.glUseProgram(MCglTF.getInstance().getGlProgramSkinnig());
-					skinningCommands.forEach((command) -> command.run());
+					skinningCommands.forEach(Runnable::run);
 					GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
 					GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
 					GL20.glUseProgram(MCglTF.CURRENT_PROGRAM);
@@ -179,7 +182,7 @@ public class RenderedGltfModel {
 		GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
 	}
 	
-	private void processNodeModel(NodeModel nodeModel, List<Runnable> vanillaRenderCommands, List<Runnable> shaderModRenderCommands, List<Runnable> skinningCommands) {
+	protected void processNodeModel(NodeModel nodeModel, List<Runnable> vanillaRenderCommands, List<Runnable> shaderModRenderCommands, List<Runnable> skinningCommands) {
 		ArrayList<Runnable> nodeSkinningCommands = new ArrayList<Runnable>();
 		ArrayList<Runnable> vanillaNodeRenderCommands = new ArrayList<Runnable>();
 		ArrayList<Runnable> shaderModNodeRenderCommands = new ArrayList<Runnable>();
@@ -247,7 +250,7 @@ public class RenderedGltfModel {
 				// https://github.com/KhronosGroup/glTF/pull/2059
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					nodeSkinningCommands.forEach((command) -> command.run());
+					nodeSkinningCommands.forEach(Runnable::run);
 				}
 			});
 		}
@@ -255,19 +258,19 @@ public class RenderedGltfModel {
 			vanillaRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					vanillaNodeRenderCommands.forEach((command) -> command.run());
+					vanillaNodeRenderCommands.forEach(Runnable::run);
 				}
 			});
 			shaderModRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					shaderModNodeRenderCommands.forEach((command) -> command.run());
+					shaderModNodeRenderCommands.forEach(Runnable::run);
 				}
 			});
 		}
 	}
 	
-	private void processMeshPrimitiveModel(NodeModel nodeModel, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel, List<Runnable> vanillaRenderCommands, List<Runnable> shaderModRenderCommands) {
+	protected void processMeshPrimitiveModel(NodeModel nodeModel, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel, List<Runnable> vanillaRenderCommands, List<Runnable> shaderModRenderCommands) {
 		Map<String, AccessorModel> attributes = meshPrimitiveModel.getAttributes();
 		AccessorModel positionsAccessorModel = attributes.get("POSITION");
 		if(positionsAccessorModel != null) {
@@ -809,7 +812,7 @@ public class RenderedGltfModel {
 		}
 	}
 	
-	private void processMeshPrimitiveModel(NodeModel nodeModel, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel, List<Runnable> vanillaRenderCommands, List<Runnable> shaderModRenderCommands, List<Runnable> skinningCommand) {
+	protected void processMeshPrimitiveModel(NodeModel nodeModel, MeshModel meshModel, MeshPrimitiveModel meshPrimitiveModel, List<Runnable> vanillaRenderCommands, List<Runnable> shaderModRenderCommands, List<Runnable> skinningCommand) {
 		Map<String, AccessorModel> attributes = meshPrimitiveModel.getAttributes();
 		AccessorModel positionsAccessorModel = attributes.get("POSITION");
 		if(positionsAccessorModel != null) {
@@ -1724,7 +1727,17 @@ public class RenderedGltfModel {
 		}
 	}
 	
-	private void bindArrayBufferViewModel(BufferViewModel bufferViewModel) {
+	protected Runnable createTransformCommand(NodeModel nodeModel) {
+		return () -> {
+			GL11.glPushMatrix();
+			BUF_FLOAT_16.clear();
+			BUF_FLOAT_16.put(findGlobalTransform(nodeModel));
+			BUF_FLOAT_16.rewind();
+			GL11.glMultMatrixf(BUF_FLOAT_16);
+		};
+	}
+	
+	public void bindArrayBufferViewModel(BufferViewModel bufferViewModel) {
 		Integer glBufferView = bufferViewModelToGlBufferView.get(bufferViewModel);
 		if(glBufferView == null) {
 			glBufferView = GL15.glGenBuffers();
@@ -1735,15 +1748,17 @@ public class RenderedGltfModel {
 		}
 		else GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glBufferView);
 	}
-	
-	private Runnable createTransformCommand(NodeModel nodeModel) {
-		return () -> {
-			GL11.glPushMatrix();
-			BUF_FLOAT_16.clear();
-			BUF_FLOAT_16.put(findGlobalTransform(nodeModel));
-			BUF_FLOAT_16.rewind();
-			GL11.glMultMatrixf(BUF_FLOAT_16);
-		};
+
+	public int obtainElementArrayBuffer(BufferViewModel bufferViewModel) {
+		Integer glBufferView = bufferViewModelToGlBufferView.get(bufferViewModel);
+		if(glBufferView == null) {
+			glBufferView = GL15.glGenBuffers();
+			gltfRenderData.addGlBufferView(glBufferView);
+			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, glBufferView);
+			GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, bufferViewModel.getBufferViewData(), GL15.GL_STATIC_DRAW);
+			bufferViewModelToGlBufferView.put(bufferViewModel, glBufferView);
+		}
+		return glBufferView;
 	}
 	
 	public int obtainGlTexture(TextureModel textureModel) {
@@ -1785,8 +1800,9 @@ public class RenderedGltfModel {
 		}
 		return glTexture;
 	}
-	
-	private IMaterialHandler obtainMaterialHandler(MaterialModel materialModel) {
+
+	public IMaterialHandler obtainMaterialHandler(MaterialModel materialModel) {
+		if(materialModel == null) return IMaterialHandler.DEFAULT_INSTANCE;
 		IMaterialHandler materialHandler = materialModelToMaterialHandler.get(materialModel);
 		if(materialHandler == null) {
 			Object extras = materialModel.getExtras();
@@ -1859,20 +1875,8 @@ public class RenderedGltfModel {
 		}
 		return materialHandler;
 	}
-	
-	private int obtainElementArrayBuffer(BufferViewModel bufferViewModel) {
-		Integer glBufferView = bufferViewModelToGlBufferView.get(bufferViewModel);
-		if(glBufferView == null) {
-			glBufferView = GL15.glGenBuffers();
-			gltfRenderData.addGlBufferView(glBufferView);
-			GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, glBufferView);
-			GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, bufferViewModel.getBufferViewData(), GL15.GL_STATIC_DRAW);
-			bufferViewModelToGlBufferView.put(bufferViewModel, glBufferView);
-		}
-		return glBufferView;
-	}
-	
-	private AccessorModel obtainNormalsAccessorModel(AccessorModel positionsAccessorModel) {
+
+	public AccessorModel obtainNormalsAccessorModel(AccessorModel positionsAccessorModel) {
 		AccessorModel normalsAccessorModel = positionsAccessorModelToNormalsAccessorModel.get(positionsAccessorModel);
 		if(normalsAccessorModel == null) {
 			int count = positionsAccessorModel.getCount();
@@ -1930,7 +1934,7 @@ public class RenderedGltfModel {
 	 * Found this simple normals to tangent algorithm here:</br>
 	 * <a href="https://stackoverflow.com/questions/55464852/how-to-find-a-randomic-vector-orthogonal-to-a-given-vector">How to find a randomic Vector orthogonal to a given Vector</a>
 	 */
-	private AccessorModel obtainTangentsAccessorModel(AccessorModel normalsAccessorModel) {
+	public AccessorModel obtainTangentsAccessorModel(AccessorModel normalsAccessorModel) {
 		AccessorModel tangentsAccessorModel = normalsAccessorModelToTangentsAccessorModel.get(normalsAccessorModel);
 		if(tangentsAccessorModel == null) {
 			int count = normalsAccessorModel.getCount();
@@ -1964,7 +1968,7 @@ public class RenderedGltfModel {
 		return tangentsAccessorModel;
 	}
 	
-	private AccessorModel obtainTangentsAccessorModel(MeshPrimitiveModel meshPrimitiveModel, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel) {
+	public AccessorModel obtainTangentsAccessorModel(MeshPrimitiveModel meshPrimitiveModel, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel) {
 		AccessorModel tangentsAccessorModel = meshPrimitiveModelToTangentsAccessorModel.get(meshPrimitiveModel);
 		if(tangentsAccessorModel == null) {
 			int count = positionsAccessorModel.getCount();
@@ -2030,7 +2034,7 @@ public class RenderedGltfModel {
 		return tangentsAccessorModel;
 	}
 	
-	private AccessorModel obtainVec4ColorsAccessorModel(AccessorModel colorsAccessorModel) {
+	public AccessorModel obtainVec4ColorsAccessorModel(AccessorModel colorsAccessorModel) {
 		if(colorsAccessorModel.getElementType() == ElementType.VEC3) {
 			AccessorModel colorsVec4AccessorModel = colorsAccessorModelVec3ToVec4.get(colorsAccessorModel);
 			if(colorsVec4AccessorModel == null) {
@@ -2094,7 +2098,7 @@ public class RenderedGltfModel {
 		return colorsAccessorModel;
 	}
 	
-	private Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>> obtainUnindexed(MeshPrimitiveModel meshPrimitiveModel) {
+	public Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>> obtainUnindexed(MeshPrimitiveModel meshPrimitiveModel) {
 		Pair<Map<String, AccessorModel>, List<Map<String, AccessorModel>>> unindexed;
 		AccessorModel indicesAccessorModel = meshPrimitiveModel.getIndices();
 		if(indicesAccessorModel != null) {
@@ -2212,7 +2216,7 @@ public class RenderedGltfModel {
 		return unindexed;
 	}
 	
-	private boolean createMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, String attributeName) {
+	public boolean createMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, String attributeName) {
 		boolean isMorphableAttribute = false;
 		for(Map<String, AccessorModel> morphTarget : morphTargets) {
 			AccessorModel accessorModel = morphTarget.get(attributeName);
@@ -2225,7 +2229,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createPositionNormalMorphTarget(List<Map<String, AccessorModel>> morphTargets, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, List<AccessorFloatData> positionTargetAccessorDatas, List<AccessorFloatData> normalTargetAccessorDatas) {
+	public boolean createPositionNormalMorphTarget(List<Map<String, AccessorModel>> morphTargets, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, List<AccessorFloatData> positionTargetAccessorDatas, List<AccessorFloatData> normalTargetAccessorDatas) {
 		boolean isMorphableAttribute = false;
 		int count = positionsAccessorModel.getCount();
 		int numTriangles = count / 3;
@@ -2296,7 +2300,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createPositionNormalTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel tangentsAccessorModel, List<AccessorFloatData> positionTargetAccessorDatas, List<AccessorFloatData> normalTargetAccessorDatas, List<AccessorFloatData> tangentTargetAccessorDatas) {
+	public boolean createPositionNormalTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel tangentsAccessorModel, List<AccessorFloatData> positionTargetAccessorDatas, List<AccessorFloatData> normalTargetAccessorDatas, List<AccessorFloatData> tangentTargetAccessorDatas) {
 		boolean isMorphableAttribute = false;
 		int count = positionsAccessorModel.getCount();
 		int numTriangles = count / 3;
@@ -2398,7 +2402,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createNormalTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, AccessorModel normalsAccessorModel, AccessorModel tangentsAccessorModel, List<AccessorFloatData> normalTargetAccessorDatas, List<AccessorFloatData> tangentTargetAccessorDatas) {
+	public boolean createNormalTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, AccessorModel normalsAccessorModel, AccessorModel tangentsAccessorModel, List<AccessorFloatData> normalTargetAccessorDatas, List<AccessorFloatData> tangentTargetAccessorDatas) {
 		boolean isMorphableAttribute = false;
 		int count = normalsAccessorModel.getCount();
 		AccessorFloatData normalsAccessorData = AccessorDatas.createFloat(normalsAccessorModel);
@@ -2441,7 +2445,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel, AccessorModel tangentsAccessorModel) {
+	public boolean createTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel, AccessorModel tangentsAccessorModel) {
 		boolean isMorphableAttribute = false;
 		int count = positionsAccessorModel.getCount();
 		int numFaces = count / 3;
@@ -2846,7 +2850,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel, AccessorModel tangentsAccessorModel, List<AccessorFloatData> normalTargetAccessorDatas) {
+	public boolean createTangentMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas, AccessorModel positionsAccessorModel, AccessorModel normalsAccessorModel, AccessorModel texcoordsAccessorModel, AccessorModel tangentsAccessorModel, List<AccessorFloatData> normalTargetAccessorDatas) {
 		boolean isMorphableAttribute = false;
 		int count = positionsAccessorModel.getCount();
 		int numFaces = count / 3;
@@ -3031,7 +3035,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createColorMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas) {
+	public boolean createColorMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas) {
 		boolean isMorphableAttribute = false;
 		for(Map<String, AccessorModel> morphTarget : morphTargets) {
 			AccessorModel accessorModel = morphTarget.get("COLOR_0");
@@ -3073,7 +3077,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private boolean createTexcoordMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas) {
+	public boolean createTexcoordMorphTarget(List<Map<String, AccessorModel>> morphTargets, List<AccessorFloatData> targetAccessorDatas) {
 		boolean isMorphableAttribute = false;
 		for(Map<String, AccessorModel> morphTarget : morphTargets) {
 			AccessorModel accessorModel = morphTarget.get("TEXCOORD_0");
@@ -3102,7 +3106,7 @@ public class RenderedGltfModel {
 		return isMorphableAttribute;
 	}
 	
-	private void bindVec3FloatMorphed(NodeModel nodeModel, MeshModel meshModel, List<Runnable> command, AccessorModel baseAccessorModel, List<AccessorFloatData> targetAccessorDatas) {
+	public void bindVec3FloatMorphed(NodeModel nodeModel, MeshModel meshModel, List<Runnable> command, AccessorModel baseAccessorModel, List<AccessorFloatData> targetAccessorDatas) {
 		AccessorModel morphedAccessorModel = AccessorModelCreation.instantiate(baseAccessorModel, "");
 		AccessorFloatData baseAccessorData = AccessorDatas.createFloat(baseAccessorModel);
 		AccessorFloatData morphedAccessorData = AccessorDatas.createFloat(morphedAccessorModel);
@@ -3137,7 +3141,7 @@ public class RenderedGltfModel {
 		});
 	}
 	
-	private AccessorModel bindColorMorphed(NodeModel nodeModel, MeshModel meshModel, List<Runnable> command, AccessorModel baseAccessorModel, List<AccessorFloatData> targetAccessorDatas) {
+	public AccessorModel bindColorMorphed(NodeModel nodeModel, MeshModel meshModel, List<Runnable> command, AccessorModel baseAccessorModel, List<AccessorFloatData> targetAccessorDatas) {
 		AccessorFloatData baseAccessorData;
 		AccessorFloatData morphedAccessorData;
 		ByteBuffer morphedBufferViewData;
@@ -3194,7 +3198,7 @@ public class RenderedGltfModel {
 		return baseAccessorModel;
 	}
 	
-	private AccessorModel bindTexcoordMorphed(NodeModel nodeModel, MeshModel meshModel, List<Runnable> command, AccessorModel baseAccessorModel, List<AccessorFloatData> targetAccessorDatas) {
+	public AccessorModel bindTexcoordMorphed(NodeModel nodeModel, MeshModel meshModel, List<Runnable> command, AccessorModel baseAccessorModel, List<AccessorFloatData> targetAccessorDatas) {
 		AccessorFloatData baseAccessorData;
 		AccessorFloatData morphedAccessorData;
 		ByteBuffer morphedBufferViewData;
@@ -3249,32 +3253,7 @@ public class RenderedGltfModel {
 		return baseAccessorModel;
 	}
 	
-	/**
-	 * Put the given values into a direct FloatBuffer and return it.
-	 * The returned buffer may always be a slice of the same instance.
-	 * This method is supposed to be called only from the OpenGL thread.
-	 *
-	 * @param value The value
-	 * @return The FloatBuffer
-	 */
-	private static FloatBuffer putFloatBuffer(float value[])
-	{
-		int total = value.length;
-		if (uniformFloatBuffer == null || uniformFloatBuffer.capacity() < total)
-		{
-		    uniformFloatBuffer = ByteBuffer
-	    		.allocateDirect(total * Float.BYTES)
-	    		.order(ByteOrder.nativeOrder())
-	    		.asFloatBuffer();
-		}
-		uniformFloatBuffer.position(0);
-		uniformFloatBuffer.limit(uniformFloatBuffer.capacity());
-		uniformFloatBuffer.put(value);
-		uniformFloatBuffer.flip();
-		return uniformFloatBuffer;
-	}
-	
-	private static float[] findGlobalTransform(NodeModel nodeModel) {
+	protected static float[] findGlobalTransform(NodeModel nodeModel) {
 		float[] found = nodeGlobalTransformLookup.get(nodeModel);
 		if(found != null) {
 			return found;
@@ -3317,6 +3296,31 @@ public class RenderedGltfModel {
 	}
 	
 	/**
+	 * Put the given values into a direct FloatBuffer and return it.
+	 * The returned buffer may always be a slice of the same instance.
+	 * This method is supposed to be called only from the OpenGL thread.
+	 *
+	 * @param value The value
+	 * @return The FloatBuffer
+	 */
+	protected static FloatBuffer putFloatBuffer(float value[])
+	{
+		int total = value.length;
+		if (uniformFloatBuffer == null || uniformFloatBuffer.capacity() < total)
+		{
+		    uniformFloatBuffer = ByteBuffer
+	    		.allocateDirect(total * Float.BYTES)
+	    		.order(ByteOrder.nativeOrder())
+	    		.asFloatBuffer();
+		}
+		uniformFloatBuffer.position(0);
+		uniformFloatBuffer.limit(uniformFloatBuffer.capacity());
+		uniformFloatBuffer.put(value);
+		uniformFloatBuffer.flip();
+		return uniformFloatBuffer;
+	}
+	
+	/**
 	 * Computes a0-a1, and stores the result in the given array.
 	 * 
 	 * This assumes that the given arrays are non-<code>null</code> 
@@ -3326,7 +3330,7 @@ public class RenderedGltfModel {
 	 * @param a1 The second array
 	 * @param result The array that stores the result
 	 */
-	private static void subtract(float[] a0, float[] a1, float[] result)
+	protected static void subtract(float[] a0, float[] a1, float[] result)
 	{
 		for (int i = 0; i < a0.length; i++)
 		{
@@ -3345,7 +3349,7 @@ public class RenderedGltfModel {
 	 * @param a1 The second array
 	 * @param result The array that stores the result
 	 */
-	private static void cross(float a0[], float a1[], float result[])
+	protected static void cross(float a0[], float a1[], float result[])
 	{
 		result[0] = a0[1] * a1[2] - a0[2] * a1[1];
 		result[1] = a0[2] * a1[0] - a0[0] * a1[2];
@@ -3358,7 +3362,7 @@ public class RenderedGltfModel {
 	 * @param a The vector
 	 * @return The length
 	 */
-	private static float computeLength(float a[])
+	protected static float computeLength(float a[])
 	{
 		float sum = 0;
 		for (int i=0; i<a.length; i++)
@@ -3378,7 +3382,7 @@ public class RenderedGltfModel {
 	 * @param a The array
 	 * @param result The array that stores the result
 	 */
-	private static void normalize(float a[], float result[])
+	protected static void normalize(float a[], float result[])
 	{
 		float scaling = 1.0f / computeLength(a);
 		scale(a, scaling, result);
@@ -3395,7 +3399,7 @@ public class RenderedGltfModel {
 	 * @param factor The scaling factor
 	 * @param result The array that will store the result
 	 */
-	private static void scale(float a[], float factor, float result[])
+	protected static void scale(float a[], float factor, float result[])
 	{
 		for (int i = 0; i < a.length; i++)
 		{
