@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
@@ -17,6 +20,7 @@ import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
+import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.MaterialModel;
 import de.javagl.jgltf.model.io.Buffers;
 import de.javagl.jgltf.model.io.GltfModelReader;
@@ -47,9 +51,8 @@ public class MCglTF {
 	private final int defaultColorMap;
 	private final int defaultNormalMap;
 	
-	private final Map<ResourceLocation, ByteBuffer> loadedBufferResources = new HashMap<ResourceLocation, ByteBuffer>();
-	private final Map<ResourceLocation, ByteBuffer> loadedImageResources = new HashMap<ResourceLocation, ByteBuffer>();
-	private final Map<ResourceLocation, RenderedGltfModel> renderedGltfModels = new HashMap<ResourceLocation, RenderedGltfModel>();
+	private final Map<ResourceLocation, Supplier<ByteBuffer>> loadedBufferResources = new HashMap<ResourceLocation, Supplier<ByteBuffer>>();
+	private final Map<ResourceLocation, Supplier<ByteBuffer>> loadedImageResources = new HashMap<ResourceLocation, Supplier<ByteBuffer>>();
 	private final List<IGltfModelReceiver> gltfModelReceivers = new ArrayList<IGltfModelReceiver>();
 	private final List<GltfRenderData> gltfRenderDatas = new ArrayList<GltfRenderData>();
 	private final Map<ResourceLocation, BiFunction<RenderedGltfModel, MaterialModel, IMaterialHandler>> materialHandlerFactories = new HashMap<ResourceLocation, BiFunction<RenderedGltfModel, MaterialModel, IMaterialHandler>>();
@@ -116,23 +119,44 @@ public class MCglTF {
 			@Override
 			public void onResourceManagerReload(IResourceManager resourceManager, Predicate<IResourceType> resourcePredicate) {
 				if(resourcePredicate.test(VanillaResourceType.MODELS)) {
-					gltfRenderDatas.forEach((gltfRenderData) -> gltfRenderData.delete());
+					gltfRenderDatas.forEach(GltfRenderData::delete);
 					gltfRenderDatas.clear();
+					Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup = new HashMap<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>>();
 					gltfModelReceivers.forEach((receiver) -> {
+						ResourceLocation modelLocation = receiver.getModelLocation();
+						MutablePair<GltfModel, List<IGltfModelReceiver>> receivers = lookup.get(modelLocation);
+						if(receivers == null) {
+							receivers = MutablePair.of(null, new ArrayList<IGltfModelReceiver>());
+							lookup.put(modelLocation, receivers);
+						}
+						receivers.getRight().add(receiver);
+					});
+					lookup.entrySet().parallelStream().forEach((entry) -> {
 						try {
-							ResourceLocation modelLocation = receiver.getModelLocation();
-							RenderedGltfModel renderedModel = renderedGltfModels.get(modelLocation);
-							if(renderedModel == null) {
-								renderedModel = new RenderedGltfModel(new GltfModelReader().readWithoutReferences(Minecraft.getMinecraft().getResourceManager().getResource(modelLocation).getInputStream()));
-								renderedGltfModels.put(modelLocation, renderedModel);
-								gltfRenderDatas.add(renderedModel.gltfRenderData);
-							}
-							receiver.onModelLoaded(renderedModel);
-						} catch (Exception e) {
+							entry.getValue().setLeft(new GltfModelReader().readWithoutReferences(Minecraft.getMinecraft().getResourceManager().getResource(entry.getKey()).getInputStream()));
+						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					});
-					renderedGltfModels.clear();
+					lookup.forEach((modelLocation, receivers) -> {
+						Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
+						do {
+							IGltfModelReceiver receiver = iterator.next();
+							if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderDatas)) {
+								RenderedGltfModel renderedModel = new RenderedGltfModel(receivers.getLeft());
+								gltfRenderDatas.add(renderedModel.gltfRenderData);
+								receiver.onReceiveSharedModel(renderedModel);
+								while(iterator.hasNext()) {
+									receiver = iterator.next();
+									if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderDatas)) {
+										receiver.onReceiveSharedModel(renderedModel);
+									}
+								}
+								return;
+							}
+						}
+						while(iterator.hasNext());
+					});
 					loadedBufferResources.clear();
 					loadedImageResources.clear();
 				}
@@ -160,29 +184,57 @@ public class MCglTF {
 	}
 	
 	public ByteBuffer getBufferResource(ResourceLocation location) {
-		ByteBuffer bufferData = loadedBufferResources.get(location);
-		if(bufferData == null) {
-			try {
-				bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream()));
-				loadedBufferResources.put(location, bufferData);
-			} catch (IOException e) {
-				e.printStackTrace();
+		Supplier<ByteBuffer> supplier;
+		synchronized(loadedBufferResources) {
+			supplier = loadedBufferResources.get(location);
+			if(supplier == null) {
+				supplier = new Supplier<ByteBuffer>() {
+					ByteBuffer bufferData;
+					
+					@Override
+					public synchronized ByteBuffer get() {
+						if(bufferData == null) {
+							try {
+								bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream()));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+						return bufferData;
+					}
+					
+				};
+				loadedBufferResources.put(location, supplier);
 			}
 		}
-		return bufferData;
+		return supplier.get();
 	}
 	
 	public ByteBuffer getImageResource(ResourceLocation location) {
-		ByteBuffer bufferData = loadedImageResources.get(location);
-		if(bufferData == null) {
-			try {
-				bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream()));
-				loadedImageResources.put(location, bufferData);
-			} catch (IOException e) {
-				e.printStackTrace();
+		Supplier<ByteBuffer> supplier;
+		synchronized(loadedImageResources) {
+			supplier = loadedImageResources.get(location);
+			if(supplier == null) {
+				supplier = new Supplier<ByteBuffer>() {
+					ByteBuffer bufferData;
+					
+					@Override
+					public synchronized ByteBuffer get() {
+						if(bufferData == null) {
+							try {
+								bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getMinecraft().getResourceManager().getResource(location).getInputStream()));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+						return bufferData;
+					}
+					
+				};
+				loadedImageResources.put(location, supplier);
 			}
 		}
-		return bufferData;
+		return supplier.get();
 	}
 	
 	public void addGltfModelReceiver(IGltfModelReceiver receiver) {

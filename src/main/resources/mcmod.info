@@ -3,7 +3,7 @@
   "modid": "mcgltf",
   "name": "MCglTF",
   "description": "A glTF model loader library based on JglTF for Minecraft.",
-  "version": "1.12.2-Forge-1.0.0.2",
+  "version": "1.12.2-Forge-1.0.1.0",
   "mcversion": "1.12.2",
   "url": "www.curseforge.com/minecraft/mc-mods/mcgltf/",
   "updateUrl": "raw.githubusercontent.com/TimLee9024/MCglTF/1.12.2-Forge/updates.json",

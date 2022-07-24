@@ -58,7 +58,7 @@ public class GltfRenderData
 	/**
 	 * Create the render data
 	 */
-	GltfRenderData() {
+	public GltfRenderData() {
 		this.glVertexArrays = new ArrayList<Integer>();
 		this.glBufferViews = new ArrayList<Integer>();
 		this.glTextures = new ArrayList<Integer>();
@@ -70,19 +70,19 @@ public class GltfRenderData
 	 * 
 	 * @param glVertexArray The GL vertex array
 	 */
-	void addGlVertexArray(int glVertexArray) {
+	public void addGlVertexArray(int glVertexArray) {
 		glVertexArrays.add(glVertexArray);
 	}
 	
-	void addGlBufferView(int glBufferView) {
+	public void addGlBufferView(int glBufferView) {
 		glBufferViews.add(glBufferView);
 	}
 	
-	void addGlTexture(int glTexture) {
+	public void addGlTexture(int glTexture) {
 		glTextures.add(glTexture);
 	}
 	
-	void addGlTransformFeedback(int glTransformFeedback) {
+	public void addGlTransformFeedback(int glTransformFeedback) {
 		glTransformFeedbacks.add(glTransformFeedback);
 	}
 	
@@ -91,10 +91,10 @@ public class GltfRenderData
 	 */
 	public void delete()
 	{
-		glVertexArrays.forEach((glVertexArray) -> GL30.glDeleteVertexArrays(glVertexArray));
-		glBufferViews.forEach((glBufferView) -> GL15.glDeleteBuffers(glBufferView));
-		glTextures.forEach((glTexture) -> GL11.glDeleteTextures(glTexture));
-		glTransformFeedbacks.forEach((glTransformFeedback) -> GL40.glDeleteTransformFeedbacks(glTransformFeedback));
+		glVertexArrays.forEach(GL30::glDeleteVertexArrays);
+		glBufferViews.forEach(GL15::glDeleteBuffers);
+		glTextures.forEach(GL11::glDeleteTextures);
+		glTransformFeedbacks.forEach(GL40::glDeleteTransformFeedbacks);
 	}
 	
 }
