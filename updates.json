@@ -1,11 +1,12 @@
 {
 	"homepage": "https://www.curseforge.com/minecraft/mc-mods/mcgltf/",
 	"1.18.2": {
+		"1.18.2-Forge-1.0.1.0": "Multi Threaded Model Loading and Custom RenderedGltfModel",
 		"1.18.2-Forge-1.0.0.1": "Fix compatibility issue with parallax occlusion mapping (POM) of any BSL based shader",
 		"1.18.2-Forge-1.0.0.0": "Initial release"
 	},
 	"promos": {
-		"1.18.2-latest": "1.18.2-Forge-1.0.0.1",
-		"1.18.2-recommended": "1.18.2-Forge-1.0.0.1"
+		"1.18.2-latest": "1.18.2-Forge-1.0.1.0",
+		"1.18.2-recommended": "1.18.2-Forge-1.0.1.0"
 	}
 }
