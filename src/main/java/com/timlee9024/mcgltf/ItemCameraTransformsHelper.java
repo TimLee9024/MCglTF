@@ -86,7 +86,7 @@ public final class ItemCameraTransformsHelper {
 
 		@Override
 		public boolean accepts(ResourceLocation modelLocation) {
-			return modelLocation.getResourceDomain().equals("mcgltf") && modelLocation.getResourcePath().equals("dummy_model");
+			return modelLocation.getNamespace().equals("mcgltf") && modelLocation.getPath().equals("dummy_model");
 		}
 
 		@Override
