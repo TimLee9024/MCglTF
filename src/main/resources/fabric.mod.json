@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "mcgltf",
+  "version": "${version}",
+
+  "name": "MCglTF",
+  "description": "A glTF model loader library based on JglTF for Minecraft.",
+  "authors": [
+    "TimLee9024"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/mcgltf",
+    "sources": "https://github.com/TimLee9024/MCglTF/1.16.5-Fabric",
+    "issues": "https://github.com/TimLee9024/MCglTF/issues"
+  },
+
+  "license": "MIT",
+  "icon": "assets/mcgltf/icon.png",
+
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "com.timlee9024.mcgltf.MCglTF"
+    ]
+  },
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  },
+  "suggests": {
+    "optifabric": "*"
+  },
+  "conflicts": {
+  	"iris": "*"
+  }
+}

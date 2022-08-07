@@ -115,7 +115,7 @@ import de.javagl.jgltf.model.io.IO;
 import de.javagl.jgltf.model.io.v2.GltfAssetV2;
 import de.javagl.jgltf.model.v2.MaterialModelV2.AlphaMode;
 import de.javagl.jgltf.model.v2.gl.Materials;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * A class that is responsible for filling a {@link DefaultGltfModel} with

@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 
 /**
  * This tangent generator is highly experimental.
@@ -116,7 +116,7 @@ public class MikktspaceTangentGenerator {
         int iNrActiveGroups, index;
         final int iNrFaces = mikkTSpace.getNumFaces();
         //boolean bRes = false;
-        final float fThresCos = MathHelper.cos((angularThreshold * (float)Math.PI) / 180.0f);
+        final float fThresCos = Mth.cos((angularThreshold * (float)Math.PI) / 180.0f);
 
         // count triangles on supported faces
         for (int f = 0; f < iNrFaces; f++) {

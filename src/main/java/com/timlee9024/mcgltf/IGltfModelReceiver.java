@@ -3,7 +3,7 @@ package com.timlee9024.mcgltf;
 import java.util.List;
 
 import de.javagl.jgltf.model.GltfModel;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public interface IGltfModelReceiver {
 
