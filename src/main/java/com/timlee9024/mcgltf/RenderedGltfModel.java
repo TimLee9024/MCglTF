@@ -27,6 +27,7 @@ import com.jme3.util.mikktspace.MikktspaceTangentGenerator;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector3f;
+import com.timlee9024.mcgltf.mixin.Matrix4fAccessor;
 
 import de.javagl.jgltf.model.AccessorByteData;
 import de.javagl.jgltf.model.AccessorData;
@@ -247,7 +248,25 @@ public class RenderedGltfModel {
 			vanillaRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f(findGlobalTransform(nodeModel));
+					Matrix4f pose = new Matrix4f();
+					float[] transform = findGlobalTransform(nodeModel);
+					Matrix4fAccessor accessor = (Matrix4fAccessor)(Object) pose;
+					accessor.setM00(transform[0]);
+					accessor.setM01(transform[1]);
+					accessor.setM02(transform[2]);
+					accessor.setM03(transform[3]);
+					accessor.setM10(transform[4]);
+					accessor.setM11(transform[5]);
+					accessor.setM12(transform[6]);
+					accessor.setM13(transform[7]);
+					accessor.setM20(transform[8]);
+					accessor.setM21(transform[9]);
+					accessor.setM22(transform[10]);
+					accessor.setM23(transform[11]);
+					accessor.setM30(transform[12]);
+					accessor.setM31(transform[13]);
+					accessor.setM32(transform[14]);
+					accessor.setM33(transform[15]);
 					Matrix3f normal = new Matrix3f(pose);
 					
 					pose.transpose();
@@ -277,7 +296,25 @@ public class RenderedGltfModel {
 			shaderModRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f(findGlobalTransform(nodeModel));
+					Matrix4f pose = new Matrix4f();
+					float[] transform = findGlobalTransform(nodeModel);
+					Matrix4fAccessor accessor = (Matrix4fAccessor)(Object) pose;
+					accessor.setM00(transform[0]);
+					accessor.setM01(transform[1]);
+					accessor.setM02(transform[2]);
+					accessor.setM03(transform[3]);
+					accessor.setM10(transform[4]);
+					accessor.setM11(transform[5]);
+					accessor.setM12(transform[6]);
+					accessor.setM13(transform[7]);
+					accessor.setM20(transform[8]);
+					accessor.setM21(transform[9]);
+					accessor.setM22(transform[10]);
+					accessor.setM23(transform[11]);
+					accessor.setM30(transform[12]);
+					accessor.setM31(transform[13]);
+					accessor.setM32(transform[14]);
+					accessor.setM33(transform[15]);
 					Matrix3f normal = new Matrix3f(pose);
 					
 					pose.transpose();
