@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.timlee9024.mcgltf.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "Matrix4fAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
