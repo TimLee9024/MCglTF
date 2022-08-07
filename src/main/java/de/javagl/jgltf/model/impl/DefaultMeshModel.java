@@ -32,7 +32,6 @@ import java.util.List;
 
 import de.javagl.jgltf.model.MeshModel;
 import de.javagl.jgltf.model.MeshPrimitiveModel;
-import de.javagl.jgltf.model.Optionals;
 
 /**
  * Implementation of a {@link MeshModel}
@@ -69,13 +68,14 @@ public class DefaultMeshModel extends AbstractNamedModelElement
     }
     
     /**
-     * Set the morph target weights
+     * Set the default morph target weights to be a <b>reference</b> to the 
+     * given array. 
      * 
      * @param weights The weights
      */
     public void setWeights(float[] weights)
     {
-        this.weights = Optionals.clone(weights);
+        this.weights = weights;
     }
     
     @Override

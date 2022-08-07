@@ -9,12 +9,7 @@ public interface IGltfModelReceiver {
 
 	ResourceLocation getModelLocation();
 	
-	@Deprecated
-	default void onModelLoaded(RenderedGltfModel renderedModel) {}
-	
-	default void onReceiveSharedModel(RenderedGltfModel renderedModel) {
-		onModelLoaded(renderedModel);
-	}
+	default void onReceiveSharedModel(RenderedGltfModel renderedModel) {}
 	
 	default boolean isReceiveSharedModel(GltfModel gltfModel, List<GltfRenderData> gltfRenderDatas) {
 		return true;
