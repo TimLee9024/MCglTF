@@ -513,6 +513,7 @@ public class GltfModelCreatorV2
             BufferViewModel bufferViewModel = 
                 gltfModel.getBufferViewModel(bufferViewIndex);
             accessorModel.setBufferViewModel(bufferViewModel);
+            accessorModel.setAccessorData(AccessorDatas.create(accessorModel));
         }
         else
         {
@@ -526,6 +527,7 @@ public class GltfModelCreatorV2
             BufferViewModel bufferViewModel = 
                 createBufferViewModel(uriString, bufferData);
             accessorModel.setBufferViewModel(bufferViewModel);
+            accessorModel.setAccessorData(AccessorDatas.create(accessorModel));
         }
         
         BufferViewModel bufferViewModel = accessorModel.getBufferViewModel(); 
@@ -1098,9 +1100,15 @@ public class GltfModelCreatorV2
             DefaultTextureModel textureModel = gltfModel.getTextureModel(i);
             transferGltfChildOfRootPropertyElements(texture, textureModel);
             
+            // The source may be null when the image data is provided
+            // by an extension.
             Integer imageIndex = texture.getSource();
-            DefaultImageModel imageModel = gltfModel.getImageModel(imageIndex);
-            textureModel.setImageModel(imageModel);
+            if (imageIndex != null)
+            {
+                DefaultImageModel imageModel = 
+                    gltfModel.getImageModel(imageIndex);
+                textureModel.setImageModel(imageModel);
+            }
         }
     }
     

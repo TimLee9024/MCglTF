@@ -1,5 +1,6 @@
 package com.timlee9024.mcgltf;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -7,7 +8,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.apache.commons.io.IOUtils;
@@ -17,14 +17,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL40;
+import org.lwjgl.opengl.GL43;
 
 import de.javagl.jgltf.model.GltfModel;
-import de.javagl.jgltf.model.MaterialModel;
 import de.javagl.jgltf.model.io.Buffers;
 import de.javagl.jgltf.model.io.GltfModelReader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.resources.IResource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -41,7 +44,6 @@ public class MCglTF {
 
 	public static final String MODID = "mcgltf";
 	public static final String RESOURCE_LOCATION = "resourceLocation";
-	public static final String MATERIAL_HANDLER = "materialHandler";
 	
 	public static final Logger logger = LogManager.getLogger(MODID);
 	
@@ -56,18 +58,25 @@ public class MCglTF {
 	private final Map<ResourceLocation, RenderedGltfModel> renderedGltfModels = new HashMap<ResourceLocation, RenderedGltfModel>();
 	private final List<IGltfModelReceiver> gltfModelReceivers = new ArrayList<IGltfModelReceiver>();
 	private final List<GltfRenderData> gltfRenderDatas = new ArrayList<GltfRenderData>();
-	private final Map<ResourceLocation, BiFunction<RenderedGltfModel, MaterialModel, IMaterialHandler>> materialHandlerFactories = new HashMap<ResourceLocation, BiFunction<RenderedGltfModel, MaterialModel, IMaterialHandler>>();
 	
-	public static int CURRENT_PROGRAM;
+	private final boolean isOptiFineExist;
 	
 	public MCglTF() {
 		INSTANCE = this;
 		//Make sure the mod being absent on the other network side does not cause the client to display the server as incompatible
 		ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+		
+		Class<?> clazz = null;
+		try {
+			clazz = Class.forName("net.optifine.shaders.Shaders");
+		} catch (ClassNotFoundException e) {
+			//Hush
+		}
+		isOptiFineExist = clazz != null;
 	}
 	
 	@SubscribeEvent
-	public static void onEvent(final FMLClientSetupEvent event) {
+	public static void onEvent(FMLClientSetupEvent event) {
 		event.getMinecraftSupplier().get().execute(() -> {
 			int glShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
 			GL20.glShaderSource(glShader,
@@ -125,7 +134,7 @@ public class MCglTF {
 	}
 	
 	@SubscribeEvent
-	public static void onEvent(final ModelBakeEvent event) {
+	public static void onEvent(ModelBakeEvent event) {
 		INSTANCE.gltfRenderDatas.forEach((gltfRenderData) -> gltfRenderData.delete());
 		INSTANCE.gltfRenderDatas.clear();
 		
@@ -145,9 +154,11 @@ public class MCglTF {
 			}
 			receivers.getRight().add(receiver);
 		});
+		ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
 		lookup.entrySet().parallelStream().forEach((entry) -> {
-			try {
-				entry.getValue().setLeft(new GltfModelReader().readWithoutReferences(Minecraft.getInstance().getResourceManager().getResource(entry.getKey()).getInputStream()));
+			Thread.currentThread().setContextClassLoader(currentClassLoader); //Prevent ClassNotFoundException from Forge EventSubclassTransformer
+			try(IResource resource = Minecraft.getInstance().getResourceManager().getResource(entry.getKey())) {
+				entry.getValue().setLeft(new GltfModelReader().readWithoutReferences(new BufferedInputStream(resource.getInputStream())));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -173,6 +184,12 @@ public class MCglTF {
 		});
 		GL11.glPopAttrib();
 		
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+		GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
+		GL30.glBindVertexArray(0);
+		GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
 		INSTANCE.renderedGltfModels.clear();
 		INSTANCE.loadedBufferResources.clear();
 		INSTANCE.loadedImageResources.clear();
@@ -205,8 +222,8 @@ public class MCglTF {
 					@Override
 					public synchronized ByteBuffer get() {
 						if(bufferData == null) {
-							try {
-								bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getInstance().getResourceManager().getResource(location).getInputStream()));
+							try(IResource resource = Minecraft.getInstance().getResourceManager().getResource(location)) {
+								bufferData = Buffers.create(IOUtils.toByteArray(new BufferedInputStream(resource.getInputStream())));
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
@@ -232,8 +249,8 @@ public class MCglTF {
 					@Override
 					public synchronized ByteBuffer get() {
 						if(bufferData == null) {
-							try {
-								bufferData = Buffers.create(IOUtils.toByteArray(Minecraft.getInstance().getResourceManager().getResource(location).getInputStream()));
+							try(IResource resource = Minecraft.getInstance().getResourceManager().getResource(location)) {
+								bufferData = Buffers.create(IOUtils.toByteArray(new BufferedInputStream(resource.getInputStream())));
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
@@ -256,12 +273,8 @@ public class MCglTF {
 		return gltfModelReceivers.remove(receiver);
 	}
 	
-	public synchronized void registerMaterialHandlerFactory(ResourceLocation location, BiFunction<RenderedGltfModel, MaterialModel, IMaterialHandler> materialHandlerFactory) {
-		materialHandlerFactories.put(location, materialHandlerFactory);
-	}
-	
-	public BiFunction<RenderedGltfModel, MaterialModel, IMaterialHandler> getMaterialHandlerFactory(ResourceLocation location) {
-		return materialHandlerFactories.get(location);
+	public boolean isShaderModActive() {
+		return isOptiFineExist && net.optifine.shaders.Shaders.isShaderPackInitialized;
 	}
 	
 	public static MCglTF getInstance() {

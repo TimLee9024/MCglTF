@@ -29,6 +29,7 @@ package de.javagl.jgltf.model.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Path;
 
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.io.v1.GltfAssetV1;
@@ -62,7 +63,21 @@ public final class GltfModelReader
         GltfAsset gltfAsset = gltfAssetReader.read(uri);
         return createModel(gltfAsset);
     }
-    
+
+    /**
+     * Read the {@link GltfModel} from the given path
+     *
+     * @param path The path
+     * @return The {@link GltfModel}
+     * @throws IOException If an IO error occurs
+     */
+    public GltfModel read(Path path) throws IOException
+    {
+        GltfAssetReader gltfAssetReader = new GltfAssetReader();
+        GltfAsset gltfAsset = gltfAssetReader.read(path);
+        return createModel(gltfAsset);
+    }
+
     /**
      * Read the {@link GltfModel} from the given URI. In contrast to the 
      * {@link #read(URI)} method, this method will not resolve any 
