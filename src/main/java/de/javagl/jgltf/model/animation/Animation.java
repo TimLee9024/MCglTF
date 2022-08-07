@@ -120,7 +120,7 @@ public final class Animation
      * 
      * @return The start time
      */
-    public float getStartTimeS()
+    float getStartTimeS()
     {
         return timesS[0];
     }
@@ -130,7 +130,7 @@ public final class Animation
      * 
      * @return The end time
      */
-    public float getEndTimeS()
+    float getEndTimeS()
     {
         return timesS[timesS.length-1];
     }
@@ -140,7 +140,7 @@ public final class Animation
      * 
      * @return The duration
      */
-    public float getDurationS()
+    float getDurationS()
     {
         return getEndTimeS() - getStartTimeS();
     }
@@ -172,7 +172,7 @@ public final class Animation
      * 
      * @param timeS The time, in seconds
      */
-    public void update(float timeS)
+    void update(float timeS)
     {
         int index0 = InterpolatorKeys.computeIndex(timeS, timesS);
         int index1 = Math.min(timesS.length - 1, index0 + 1);
