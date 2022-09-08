@@ -122,7 +122,7 @@ public class RenderedGltfModel {
 	protected static final int skinning_out_tangent = 2;
 	
 	protected static FloatBuffer uniformFloatBuffer = null;
-    
+	
 	protected static final FloatBuffer BUF_FLOAT_9 = BufferUtils.createFloatBuffer(9);
 	protected static final FloatBuffer BUF_FLOAT_16 = BufferUtils.createFloatBuffer(16);
 	
@@ -3654,24 +3654,24 @@ public class RenderedGltfModel {
 			pathToNode.add(nodeModel);
 			nodeModel = nodeModel.getParent();
 			while(nodeModel != null) {
-	    		found = nodeGlobalTransformLookup.get(nodeModel);
-	        	if(found != null) {
-	        		int i = pathToNode.size() - 1;
-	        		do {
-	        			nodeModel = pathToNode.get(i);
-	        			float[] transform = DefaultNodeModel.computeLocalTransform(nodeModel, null);
-	        			MathUtils.mul4x4(found, transform, transform);
-	        			nodeGlobalTransformLookup.put(nodeModel, transform);
-	        			found = transform;
-	        		}
-	        		while(--i >= 0);
-	        		return found;
-	        	}
-	        	else {
-	        		pathToNode.add(nodeModel);
-	        		nodeModel = nodeModel.getParent();
-	        	}
-	    	}
+				found = nodeGlobalTransformLookup.get(nodeModel);
+				if(found != null) {
+					int i = pathToNode.size() - 1;
+					do {
+						nodeModel = pathToNode.get(i);
+						float[] transform = DefaultNodeModel.computeLocalTransform(nodeModel, null);
+						MathUtils.mul4x4(found, transform, transform);
+						nodeGlobalTransformLookup.put(nodeModel, transform);
+						found = transform;
+					}
+					while(--i >= 0);
+					return found;
+				}
+				else {
+					pathToNode.add(nodeModel);
+					nodeModel = nodeModel.getParent();
+				}
+			}
 			int i = pathToNode.size() - 1;
 			nodeModel = pathToNode.get(i);
 			found = DefaultNodeModel.computeLocalTransform(nodeModel, null);
@@ -3699,7 +3699,7 @@ public class RenderedGltfModel {
 		int total = value.length;
 		if (uniformFloatBuffer == null || uniformFloatBuffer.capacity() < total)
 		{
-		    uniformFloatBuffer = BufferUtils.createFloatBuffer(total);
+			uniformFloatBuffer = BufferUtils.createFloatBuffer(total);
 		}
 		uniformFloatBuffer.position(0);
 		uniformFloatBuffer.limit(uniformFloatBuffer.capacity());

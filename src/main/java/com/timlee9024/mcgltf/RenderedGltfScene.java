@@ -28,12 +28,14 @@ public class RenderedGltfScene {
 	public void renderForVanilla() {
 		int currentProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
 		
-		GL20.glUseProgram(MCglTF.getInstance().getGlProgramSkinnig());
-		GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
-		skinningCommands.forEach(Runnable::run);
-		GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
-		GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
-		GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
+		if(!skinningCommands.isEmpty()) {
+			GL20.glUseProgram(MCglTF.getInstance().getGlProgramSkinnig());
+			GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
+			skinningCommands.forEach(Runnable::run);
+			GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
+			GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
+			GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
+		}
 		
 		RenderedGltfModel.CURRENT_SHADER_INSTANCE = GameRenderer.getRendertypeEntitySolidShader();
 		int entitySolidProgram = RenderedGltfModel.CURRENT_SHADER_INSTANCE.getId();
@@ -76,13 +78,15 @@ public class RenderedGltfScene {
 	public void renderForShaderMod() {
 		int currentProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
 		
-		GL20.glUseProgram(MCglTF.getInstance().getGlProgramSkinnig());
-		GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
-		skinningCommands.forEach(Runnable::run);
-		GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
-		GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
-		GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
-		GL20.glUseProgram(currentProgram);
+		if(!skinningCommands.isEmpty()) {
+			GL20.glUseProgram(MCglTF.getInstance().getGlProgramSkinnig());
+			GL11.glEnable(GL30.GL_RASTERIZER_DISCARD);
+			skinningCommands.forEach(Runnable::run);
+			GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
+			GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
+			GL11.glDisable(GL30.GL_RASTERIZER_DISCARD);
+			GL20.glUseProgram(currentProgram);
+		}
 		
 		RenderedGltfModel.MODEL_VIEW_MATRIX = GL20.glGetUniformLocation(currentProgram, "modelViewMatrix");
 		RenderedGltfModel.MODEL_VIEW_MATRIX_INVERSE = GL20.glGetUniformLocation(currentProgram, "modelViewMatrixInverse");

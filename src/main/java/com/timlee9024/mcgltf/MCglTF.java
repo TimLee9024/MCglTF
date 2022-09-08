@@ -59,9 +59,13 @@ public class MCglTF implements ModInitializer {
 	
 	private boolean isOptiFineExist;
 	
+	public MCglTF() {
+		INSTANCE = this;
+	}
+	
 	@Override
 	public void onInitialize() {
-		INSTANCE = this;
+		isOptiFineExist = FabricLoader.getInstance().isModLoaded("optifabric");
 		
 		Minecraft.getInstance().execute(() -> {
 			lightTexture = Minecraft.getInstance().getTextureManager().getTexture(new ResourceLocation("dynamic/light_map_1"));
@@ -119,8 +123,6 @@ public class MCglTF implements ModInitializer {
 			
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, currentTexture);
 		});
-		
-		isOptiFineExist = FabricLoader.getInstance().isModLoaded("optifabric");
 		
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 
