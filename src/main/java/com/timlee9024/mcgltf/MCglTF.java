@@ -57,9 +57,13 @@ public class MCglTF implements ModInitializer {
 	
 	private boolean isOptiFineExist;
 	
+	public MCglTF() {
+		INSTANCE = this;
+	}
+	
 	@Override
 	public void onInitialize() {
-		INSTANCE = this;
+		isOptiFineExist = FabricLoader.getInstance().isModLoaded("optifabric");
 		
 		Minecraft.getInstance().execute(() -> {
 			int glShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
@@ -119,8 +123,6 @@ public class MCglTF implements ModInitializer {
 			@SuppressWarnings("unused")
 			BlockEntityRenderDispatcher instance = BlockEntityRenderDispatcher.instance;
 		});
-		
-		isOptiFineExist = FabricLoader.getInstance().isModLoaded("optifabric");
 		
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
 
