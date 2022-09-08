@@ -19,7 +19,7 @@ public abstract class CubicSplineInterpolatedChannel extends InterpolatedChannel
 		if(timeS <= timesS[0]) {
 			System.arraycopy(values[0][1], 0, output, 0, output.length);
 		}
-		if(timeS >= timesS[timesS.length - 1]) {
+		else if(timeS >= timesS[timesS.length - 1]) {
 			System.arraycopy(values[timesS.length - 1][1], 0, output, 0, output.length);
 		}
 		else {
