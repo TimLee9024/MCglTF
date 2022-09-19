@@ -1,3 +1,6 @@
+**Start from *October 2022*, I will get more busier than before and don't have enough time to keep the development and modder support for MCglTF.
+So I've decideded to hand over the maintainment of MCglTF to [Protoxy22](https://github.com/Protoxy22), who known for his [ModularWarfare Mod](https://www.curseforge.com/minecraft/mc-mods/modularwarfare).
+Please visit his [GitHub repository](https://github.com/ModularMods/MCglTF) and [Discord server](https://discord.gg/k7Fs39kq) for contiuous support.**
 # MCglTF
 A 3D model loader library which load glTF format file and prepare the required techniques to render the model for Minecraft Modding enviroment.
 Various features from glTF spec are available but still remain a good compatibility and performance.
