@@ -5,7 +5,7 @@ Various features from glTF spec are available but still remain a good compatibil
 [![](https://cf.way2muchnoise.eu/title/mcgltf.svg)](https://www.curseforge.com/minecraft/mc-mods/mcgltf) [![](https://cf.way2muchnoise.eu/versions/mcgltf.svg)](https://www.curseforge.com/minecraft/mc-mods/mcgltf) [![](https://cf.way2muchnoise.eu/mcgltf.svg)](https://www.curseforge.com/minecraft/mc-mods/mcgltf)
 ## Usages
 The example codes for rendering Block, Item, and Entity
-- https://github.com/TimLee9024/MCglTF-Example
+- https://github.com/ModularMods/MCglTF-Example
 ## Features
 - [x] GLTF format (Embedded resources or via ResourceLocation)
 - [x] GLB format
@@ -13,7 +13,7 @@ The example codes for rendering Block, Item, and Entity
 - [x] Normals
 - [x] Tangents
 - [x] Vertex colors
-- [x] Materials ([Require OptiFine and supported ShaderPack for PBR](https://github.com/TimLee9024/MCglTF/wiki/How-to-make-PBR-Materials-working-with-OptiFine))
+- [x] Materials ([Require OptiFine and supported ShaderPack for PBR](https://github.com/ModularMods/MCglTF/wiki/How-to-make-PBR-Materials-working-with-OptiFine))
 - [x] Textures
 - [ ] Mutiple texture coordinates (For compatibility reason with Vanilla)
 - [x] Rig
