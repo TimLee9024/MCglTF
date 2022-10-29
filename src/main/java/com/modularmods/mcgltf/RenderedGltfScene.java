@@ -1,4 +1,4 @@
-package com.timlee9024.mcgltf;
+package com.modularmods.mcgltf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +73,8 @@ public class RenderedGltfScene {
 		vanillaRenderCommands.forEach(Runnable::run);
 		
 		GL20.glUseProgram(currentProgram);
+		
+		RenderedGltfModel.NODE_GLOBAL_TRANSFORMATION_LOOKUP_CACHE.clear();
 	}
 	
 	public void renderForShaderMod() {
@@ -115,6 +117,8 @@ public class RenderedGltfScene {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, currentTexture1);
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, currentTexture0);
+		
+		RenderedGltfModel.NODE_GLOBAL_TRANSFORMATION_LOOKUP_CACHE.clear();
 	}
 
 }
