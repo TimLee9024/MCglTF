@@ -24,7 +24,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.timlee9024.mcgltf;
+package com.modularmods.mcgltf;
 
 import de.javagl.jgltf.model.AccessorByteData;
 import de.javagl.jgltf.model.AccessorData;
@@ -35,7 +35,7 @@ import de.javagl.jgltf.model.AccessorShortData;
 /**
  * Utility methods for extracting raw data from {@link AccessorData}
  */
-class AccessorDataUtils
+public class AccessorDataUtils
 {
     /**
      * Returns the values that are stored in the given {@link AccessorData}.
@@ -50,7 +50,7 @@ class AccessorDataUtils
      * @throws IllegalArgumentException If the given data does not have one
      * of the valid types.
      */
-    static int[] readInts(AccessorData accessorData)
+	public static int[] readInts(AccessorData accessorData)
     {
         int numElements = accessorData.getNumElements();
         int numComponents = accessorData.getNumComponentsPerElement();        
@@ -168,7 +168,7 @@ class AccessorDataUtils
      * @param numComponents The number of components per element
      * @return The indices
      */
-    static float[] readFloats(
+    public static float[] readFloats(
         AccessorFloatData accessorData, int numElements, int numComponents)
     {
         int n = numElements * numComponents;
@@ -198,7 +198,7 @@ class AccessorDataUtils
      * @param numComponents The number of components per element
      * @param data The raw data
      */
-    static void writeFloats(
+    public static void writeFloats(
         AccessorFloatData accessorData, int numElements, int numComponents, 
         float data[])
     {
@@ -223,7 +223,7 @@ class AccessorDataUtils
      * @param target The target {@link AccessorData}
      * @param source The source {@link AccessorData}
      */
-    static void copyFloats(
+    public static void copyFloats(
         AccessorFloatData target,
         AccessorFloatData source)
     {
