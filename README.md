@@ -28,8 +28,6 @@ For example, you cannot get current GL program that is proper for Item/Entity/Bl
 Aside from that, Iris Shaders does not fully support every features from shaderpack. And you can still using OptiFine in Fabric with OptiFabric installed.
 
 So it is most likely that MCglTF will still not support Iris Shaders in the future.
-## System requirements
-- OpenGL 4.3 and higher
 ## Credit
 - JglTF by javagl : https://github.com/javagl/JglTF
 - Mikk Tangent Generator by jMonkeyEngine : https://github.com/jMonkeyEngine/jmonkeyengine
