@@ -1,4 +1,4 @@
-package com.timlee9024.mcgltf.animation;
+package com.modularmods.mcgltf.animation;
 
 public abstract class LinearInterpolatedChannel extends InterpolatedChannel {
 
