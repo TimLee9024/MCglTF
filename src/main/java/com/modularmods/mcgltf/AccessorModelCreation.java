@@ -24,7 +24,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.timlee9024.mcgltf;
+package com.modularmods.mcgltf;
 
 import java.nio.ByteBuffer;
 
@@ -44,7 +44,7 @@ import de.javagl.jgltf.model.io.Buffers;
 /**
  * Methods to create {@link AccessorModel} instances programmatically
  */
-class AccessorModelCreation
+public class AccessorModelCreation
 {
     /**
      * Create a new {@link AccessorModel} that describes the same data as
@@ -60,7 +60,7 @@ class AccessorModelCreation
      * @param bufferUriString The URI string for the {@link BufferModel}
      * @return The new {@link AccessorModel} instance.
      */
-    static AccessorModel instantiate(
+	public static AccessorModel instantiate(
         AccessorModel accessorModel, String bufferUriString)
     {
         AccessorModel instantiatedAccessorModel = createAccessorModel(
@@ -93,7 +93,7 @@ class AccessorModelCreation
      * @param bufferUriString The URI string for the {@link BufferModel}
      * @return The {@link AccessorModel}
      */
-    static AccessorModel createAccessorModel(int componentType,
+	public static AccessorModel createAccessorModel(int componentType,
         int count, ElementType elementType, String bufferUriString)
     {
         DefaultAccessorModel accessorModel =
