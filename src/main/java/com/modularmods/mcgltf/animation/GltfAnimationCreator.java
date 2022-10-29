@@ -1,9 +1,9 @@
-package com.timlee9024.mcgltf.animation;
+package com.modularmods.mcgltf.animation;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.timlee9024.mcgltf.MCglTF;
+import com.modularmods.mcgltf.MCglTF;
 
 import de.javagl.jgltf.model.AccessorData;
 import de.javagl.jgltf.model.AccessorFloatData;
