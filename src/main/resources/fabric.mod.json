@@ -6,12 +6,12 @@
   "name": "MCglTF",
   "description": "A glTF model loader library based on JglTF for Minecraft.",
   "authors": [
-    "TimLee9024"
+    "TimLee9024", "Protoxy"
   ],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/mcgltf",
-    "sources": "https://github.com/TimLee9024/MCglTF/1.18.2-Fabric",
-    "issues": "https://github.com/TimLee9024/MCglTF/issues"
+    "sources": "https://github.com/ModularMods/MCglTF/1.18.2-Fabric",
+    "issues": "https://github.com/ModularMods/MCglTF/issues"
   },
 
   "license": "MIT",
@@ -20,7 +20,7 @@
   "environment": "client",
   "entrypoints": {
     "main": [
-      "com.timlee9024.mcgltf.MCglTF"
+      "com.modularmods.mcgltf.MCglTF"
     ]
   },
   "mixins": [

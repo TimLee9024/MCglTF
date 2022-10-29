@@ -1,4 +1,4 @@
-package com.timlee9024.mcgltf.mixin;
+package com.modularmods.mcgltf.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
