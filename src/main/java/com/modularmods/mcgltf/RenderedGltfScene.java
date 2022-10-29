@@ -1,4 +1,4 @@
-package com.timlee9024.mcgltf;
+package com.modularmods.mcgltf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +30,11 @@ public class RenderedGltfScene {
 		}
 		
 		vanillaRenderCommands.forEach(Runnable::run);
+		
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+		GL30.glBindVertexArray(0);
+		RenderedGltfModel.NODE_GLOBAL_TRANSFORMATION_LOOKUP_CACHE.clear();
 	}
 	
 	public void renderForShaderMod() {
@@ -46,6 +51,11 @@ public class RenderedGltfScene {
 		
 		GL20.glVertexAttrib2f(RenderedGltfModel.mc_midTexCoord, 1.0F, 1.0F);
 		shaderModRenderCommands.forEach(Runnable::run);
+		
+		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
+		GL30.glBindVertexArray(0);
+		RenderedGltfModel.NODE_GLOBAL_TRANSFORMATION_LOOKUP_CACHE.clear();
 	}
 
 }

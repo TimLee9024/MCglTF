@@ -1,4 +1,4 @@
-package com.timlee9024.mcgltf;
+package com.modularmods.mcgltf;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public interface IGltfModelReceiver {
 	
 	default void onReceiveSharedModel(RenderedGltfModel renderedModel) {}
 	
-	default boolean isReceiveSharedModel(GltfModel gltfModel, List<GltfRenderData> gltfRenderDatas) {
+	default boolean isReceiveSharedModel(GltfModel gltfModel, List<Runnable> gltfRenderDatas) {
 		return true;
 	}
 }

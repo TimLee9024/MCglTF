@@ -1,4 +1,4 @@
-package com.timlee9024.mcgltf;
+package com.modularmods.mcgltf;
 
 import java.util.Collections;
 import java.util.List;

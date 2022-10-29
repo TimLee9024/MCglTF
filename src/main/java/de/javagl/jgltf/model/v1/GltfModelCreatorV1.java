@@ -39,7 +39,7 @@ import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.timlee9024.mcgltf.MCglTF;
+import com.modularmods.mcgltf.MCglTF;
 
 import de.javagl.jgltf.impl.v1.Accessor;
 import de.javagl.jgltf.impl.v1.Animation;
