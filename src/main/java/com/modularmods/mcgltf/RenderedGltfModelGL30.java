@@ -589,18 +589,18 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			});
 		}
 		else {
-			skinningCommands.parallelStream().forEach(Runnable::run);
-			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, positionBuffer);
-			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, positionsBufferViewData);
-			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, normalBuffer);
-			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, normalsBufferViewData);
-			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, tangentBuffer);
-			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, tangentsBufferViewData);
-			
 			renderCommand.add(() -> {
+				skinningCommands.parallelStream().forEach(Runnable::run);
+				
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, positionBuffer);
+				GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, positionsBufferViewData);
+				
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, normalBuffer);
+				GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, normalsBufferViewData);
+				
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, tangentBuffer);
+				GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, tangentsBufferViewData);
+				
 				GL30.glBindVertexArray(glVertexArray);
 				GL11.glDrawArrays(mode, 0, pointCount);
 			});
