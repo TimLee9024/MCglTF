@@ -24,7 +24,8 @@
     ]
   },
   "mixins": [
-    "mcgltf.mixins.json"
+    "mcgltf.mixins.json",
+    "mcgltf.iris.mixins.json"
   ],
 
   "depends": {
@@ -34,9 +35,7 @@
     "java": ">=17"
   },
   "suggests": {
-    "optifabric": "*"
-  },
-  "conflicts": {
-  	"iris": "*"
+    "optifabric": "*",
+    "iris": ">=1.4.0"
   }
 }

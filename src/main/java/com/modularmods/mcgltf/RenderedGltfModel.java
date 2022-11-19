@@ -51,6 +51,7 @@ import de.javagl.jgltf.model.TextureModel;
 import de.javagl.jgltf.model.image.PixelData;
 import de.javagl.jgltf.model.image.PixelDatas;
 import de.javagl.jgltf.model.impl.DefaultNodeModel;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.renderer.ShaderInstance;
 
 public class RenderedGltfModel {
@@ -60,22 +61,22 @@ public class RenderedGltfModel {
 	 * This may change in different Minecraft version.</br>
 	 * <a href="https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt">optifine/shaders.txt</a>
 	 */
-	public static final int mc_midTexCoord = 12;
+	public static final int mc_midTexCoord;
 	
 	/**
 	 * ShaderMod attribute location for Tangent.</br>
 	 * This may change in different Minecraft version.</br>
 	 * <a href="https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt">optifine/shaders.txt</a>
 	 */
-	public static final int at_tangent = 13;
+	public static final int at_tangent;
 	
 	/**
 	 * ShaderMod Texture index, this may change in different Minecraft version.</br>
 	 * <a href="https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt">optifine/shaders.txt</a>
 	 */
 	public static final int COLOR_MAP_INDEX = GL13.GL_TEXTURE0;
-	public static final int NORMAL_MAP_INDEX = GL13.GL_TEXTURE1;
-	public static final int SPECULAR_MAP_INDEX = GL13.GL_TEXTURE3;
+	public static int NORMAL_MAP_INDEX = GL13.GL_TEXTURE1;
+	public static int SPECULAR_MAP_INDEX = GL13.GL_TEXTURE3;
 	
 	public static int MODEL_VIEW_MATRIX;
 	public static int MODEL_VIEW_MATRIX_INVERSE;
@@ -94,16 +95,7 @@ public class RenderedGltfModel {
 		GL11.glEnable(GL11.GL_CULL_FACE);
 	};
 	
-	protected static final Runnable shaderModDefaultMaterialCommand = () -> {
-		GL13.glActiveTexture(COLOR_MAP_INDEX);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
-		GL13.glActiveTexture(NORMAL_MAP_INDEX);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultNormalMap());
-		GL13.glActiveTexture(SPECULAR_MAP_INDEX);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultSpecularMap());
-		GL20.glVertexAttrib4f(vaColor, 1.0F, 1.0F, 1.0F, 1.0F);
-		GL11.glEnable(GL11.GL_CULL_FACE);
-	};
+	protected static final Runnable shaderModDefaultMaterialCommand;
 	
 	public static ShaderInstance CURRENT_SHADER_INSTANCE;
 	public static Matrix4f CURRENT_POSE;
@@ -143,6 +135,43 @@ public class RenderedGltfModel {
 	public final GltfModel gltfModel;
 	
 	public final List<RenderedGltfScene> renderedGltfScenes;
+	
+	static {
+		if(FabricLoader.getInstance().isModLoaded("iris")) {
+			mc_midTexCoord = 7;
+			at_tangent = 8;
+			
+			shaderModDefaultMaterialCommand = () -> {
+				GL13.glActiveTexture(COLOR_MAP_INDEX);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
+				if(NORMAL_MAP_INDEX != -1) {
+					GL13.glActiveTexture(NORMAL_MAP_INDEX);
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultNormalMap());
+				}
+				if(SPECULAR_MAP_INDEX != -1) {
+					GL13.glActiveTexture(SPECULAR_MAP_INDEX);
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultSpecularMap());
+				}
+				GL20.glVertexAttrib4f(vaColor, 1.0F, 1.0F, 1.0F, 1.0F);
+				GL11.glEnable(GL11.GL_CULL_FACE);
+			};
+		}
+		else {
+			mc_midTexCoord = 12;
+			at_tangent = 13;
+			
+			shaderModDefaultMaterialCommand = () -> {
+				GL13.glActiveTexture(COLOR_MAP_INDEX);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
+				GL13.glActiveTexture(NORMAL_MAP_INDEX);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultNormalMap());
+				GL13.glActiveTexture(SPECULAR_MAP_INDEX);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultSpecularMap());
+				GL20.glVertexAttrib4f(vaColor, 1.0F, 1.0F, 1.0F, 1.0F);
+				GL11.glEnable(GL11.GL_CULL_FACE);
+			};
+		}
+	}
 	
 	protected RenderedGltfModel(GltfModel gltfModel, List<RenderedGltfScene> renderedGltfScenes) {
 		this.gltfModel = gltfModel;
@@ -262,47 +291,7 @@ public class RenderedGltfModel {
 			vanillaRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f();
-					float[] transform = findGlobalTransform(nodeModel);
-					Matrix4fAccessor accessor = (Matrix4fAccessor)(Object) pose;
-					accessor.setM00(transform[0]);
-					accessor.setM01(transform[1]);
-					accessor.setM02(transform[2]);
-					accessor.setM03(transform[3]);
-					accessor.setM10(transform[4]);
-					accessor.setM11(transform[5]);
-					accessor.setM12(transform[6]);
-					accessor.setM13(transform[7]);
-					accessor.setM20(transform[8]);
-					accessor.setM21(transform[9]);
-					accessor.setM22(transform[10]);
-					accessor.setM23(transform[11]);
-					accessor.setM30(transform[12]);
-					accessor.setM31(transform[13]);
-					accessor.setM32(transform[14]);
-					accessor.setM33(transform[15]);
-					Matrix3f normal = new Matrix3f(pose);
-					
-					pose.transpose();
-					Matrix4f currentPose = CURRENT_POSE.copy();
-					currentPose.multiply(pose);
-					
-					normal.transpose();
-					Matrix3f currentNormal = CURRENT_NORMAL.copy();
-					currentNormal.mul(normal);
-					
-					CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.set(currentPose);
-					CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.upload();
-					
-					currentNormal.transpose();
-					Vector3f light0Direction = LIGHT0_DIRECTION.copy();
-					Vector3f light1Direction = LIGHT1_DIRECTION.copy();
-					light0Direction.transform(currentNormal);
-					light1Direction.transform(currentNormal);
-					CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.set(light0Direction);
-					CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.set(light1Direction);
-					CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.upload();
-					CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.upload();
+					applyTransformVanilla(nodeModel);
 					
 					vanillaNodeRenderCommands.forEach(Runnable::run);
 				}
@@ -310,44 +299,7 @@ public class RenderedGltfModel {
 			shaderModRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f();
-					float[] transform = findGlobalTransform(nodeModel);
-					Matrix4fAccessor accessor = (Matrix4fAccessor)(Object) pose;
-					accessor.setM00(transform[0]);
-					accessor.setM01(transform[1]);
-					accessor.setM02(transform[2]);
-					accessor.setM03(transform[3]);
-					accessor.setM10(transform[4]);
-					accessor.setM11(transform[5]);
-					accessor.setM12(transform[6]);
-					accessor.setM13(transform[7]);
-					accessor.setM20(transform[8]);
-					accessor.setM21(transform[9]);
-					accessor.setM22(transform[10]);
-					accessor.setM23(transform[11]);
-					accessor.setM30(transform[12]);
-					accessor.setM31(transform[13]);
-					accessor.setM32(transform[14]);
-					accessor.setM33(transform[15]);
-					Matrix3f normal = new Matrix3f(pose);
-					
-					pose.transpose();
-					Matrix4f currentPose = CURRENT_POSE.copy();
-					currentPose.multiply(pose);
-					
-					normal.transpose();
-					Matrix3f currentNormal = CURRENT_NORMAL.copy();
-					currentNormal.mul(normal);
-					
-					currentPose.store(BUF_FLOAT_16);
-					GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX, false, BUF_FLOAT_16);
-					
-					currentPose.invert();
-					currentPose.store(BUF_FLOAT_16);
-					GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX_INVERSE, false, BUF_FLOAT_16);
-					
-					currentNormal.store(BUF_FLOAT_9);
-					GL20.glUniformMatrix3fv(NORMAL_MATRIX, false, BUF_FLOAT_9);
+					applyTransformShaderMod(nodeModel);
 					
 					shaderModNodeRenderCommands.forEach(Runnable::run);
 				}
@@ -2152,6 +2104,91 @@ public class RenderedGltfModel {
 			GL30.glBindVertexArray(glVertexArray);
 			GL40.glDrawTransformFeedback(mode, glTransformFeedback);
 		});
+	}
+	
+	protected void applyTransformVanilla(NodeModel nodeModel) {
+		Matrix4f pose = new Matrix4f();
+		float[] transform = findGlobalTransform(nodeModel);
+		Matrix4fAccessor accessor = (Matrix4fAccessor)(Object) pose;
+		accessor.setM00(transform[0]);
+		accessor.setM01(transform[1]);
+		accessor.setM02(transform[2]);
+		accessor.setM03(transform[3]);
+		accessor.setM10(transform[4]);
+		accessor.setM11(transform[5]);
+		accessor.setM12(transform[6]);
+		accessor.setM13(transform[7]);
+		accessor.setM20(transform[8]);
+		accessor.setM21(transform[9]);
+		accessor.setM22(transform[10]);
+		accessor.setM23(transform[11]);
+		accessor.setM30(transform[12]);
+		accessor.setM31(transform[13]);
+		accessor.setM32(transform[14]);
+		accessor.setM33(transform[15]);
+		Matrix3f normal = new Matrix3f(pose);
+		
+		pose.transpose();
+		Matrix4f currentPose = CURRENT_POSE.copy();
+		currentPose.multiply(pose);
+		
+		normal.transpose();
+		Matrix3f currentNormal = CURRENT_NORMAL.copy();
+		currentNormal.mul(normal);
+		
+		CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.set(currentPose);
+		CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.upload();
+		
+		currentNormal.transpose();
+		Vector3f light0Direction = LIGHT0_DIRECTION.copy();
+		Vector3f light1Direction = LIGHT1_DIRECTION.copy();
+		light0Direction.transform(currentNormal);
+		light1Direction.transform(currentNormal);
+		CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.set(light0Direction);
+		CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.set(light1Direction);
+		CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.upload();
+		CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.upload();
+	}
+	
+	protected void applyTransformShaderMod(NodeModel nodeModel) {
+		Matrix4f pose = new Matrix4f();
+		float[] transform = findGlobalTransform(nodeModel);
+		Matrix4fAccessor accessor = (Matrix4fAccessor)(Object) pose;
+		accessor.setM00(transform[0]);
+		accessor.setM01(transform[1]);
+		accessor.setM02(transform[2]);
+		accessor.setM03(transform[3]);
+		accessor.setM10(transform[4]);
+		accessor.setM11(transform[5]);
+		accessor.setM12(transform[6]);
+		accessor.setM13(transform[7]);
+		accessor.setM20(transform[8]);
+		accessor.setM21(transform[9]);
+		accessor.setM22(transform[10]);
+		accessor.setM23(transform[11]);
+		accessor.setM30(transform[12]);
+		accessor.setM31(transform[13]);
+		accessor.setM32(transform[14]);
+		accessor.setM33(transform[15]);
+		Matrix3f normal = new Matrix3f(pose);
+		
+		pose.transpose();
+		Matrix4f currentPose = CURRENT_POSE.copy();
+		currentPose.multiply(pose);
+		
+		normal.transpose();
+		Matrix3f currentNormal = CURRENT_NORMAL.copy();
+		currentNormal.mul(normal);
+		
+		currentPose.store(BUF_FLOAT_16);
+		GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX, false, BUF_FLOAT_16);
+		
+		currentPose.invert();
+		currentPose.store(BUF_FLOAT_16);
+		GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX_INVERSE, false, BUF_FLOAT_16);
+		
+		currentNormal.store(BUF_FLOAT_9);
+		GL20.glUniformMatrix3fv(NORMAL_MATRIX, false, BUF_FLOAT_9);
 	}
 	
 	public static class Material {

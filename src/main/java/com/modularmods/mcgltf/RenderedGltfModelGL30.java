@@ -13,11 +13,6 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import com.modularmods.mcgltf.mixin.Matrix4fAccessor;
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-
 import de.javagl.jgltf.model.AccessorByteData;
 import de.javagl.jgltf.model.AccessorData;
 import de.javagl.jgltf.model.AccessorDatas;
@@ -127,47 +122,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			vanillaRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f();
-					float[] transform = findGlobalTransform(nodeModel);
-					Matrix4fAccessor accessor = (Matrix4fAccessor)(Object) pose;
-					accessor.setM00(transform[0]);
-					accessor.setM01(transform[1]);
-					accessor.setM02(transform[2]);
-					accessor.setM03(transform[3]);
-					accessor.setM10(transform[4]);
-					accessor.setM11(transform[5]);
-					accessor.setM12(transform[6]);
-					accessor.setM13(transform[7]);
-					accessor.setM20(transform[8]);
-					accessor.setM21(transform[9]);
-					accessor.setM22(transform[10]);
-					accessor.setM23(transform[11]);
-					accessor.setM30(transform[12]);
-					accessor.setM31(transform[13]);
-					accessor.setM32(transform[14]);
-					accessor.setM33(transform[15]);
-					Matrix3f normal = new Matrix3f(pose);
-					
-					pose.transpose();
-					Matrix4f currentPose = CURRENT_POSE.copy();
-					currentPose.multiply(pose);
-					
-					normal.transpose();
-					Matrix3f currentNormal = CURRENT_NORMAL.copy();
-					currentNormal.mul(normal);
-					
-					CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.set(currentPose);
-					CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.upload();
-					
-					currentNormal.transpose();
-					Vector3f light0Direction = LIGHT0_DIRECTION.copy();
-					Vector3f light1Direction = LIGHT1_DIRECTION.copy();
-					light0Direction.transform(currentNormal);
-					light1Direction.transform(currentNormal);
-					CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.set(light0Direction);
-					CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.set(light1Direction);
-					CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.upload();
-					CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.upload();
+					applyTransformVanilla(nodeModel);
 					
 					vanillaNodeRenderCommands.forEach(Runnable::run);
 				}
@@ -175,44 +130,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			shaderModRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f();
-					float[] transform = findGlobalTransform(nodeModel);
-					Matrix4fAccessor accessor = (Matrix4fAccessor)(Object) pose;
-					accessor.setM00(transform[0]);
-					accessor.setM01(transform[1]);
-					accessor.setM02(transform[2]);
-					accessor.setM03(transform[3]);
-					accessor.setM10(transform[4]);
-					accessor.setM11(transform[5]);
-					accessor.setM12(transform[6]);
-					accessor.setM13(transform[7]);
-					accessor.setM20(transform[8]);
-					accessor.setM21(transform[9]);
-					accessor.setM22(transform[10]);
-					accessor.setM23(transform[11]);
-					accessor.setM30(transform[12]);
-					accessor.setM31(transform[13]);
-					accessor.setM32(transform[14]);
-					accessor.setM33(transform[15]);
-					Matrix3f normal = new Matrix3f(pose);
-					
-					pose.transpose();
-					Matrix4f currentPose = CURRENT_POSE.copy();
-					currentPose.multiply(pose);
-					
-					normal.transpose();
-					Matrix3f currentNormal = CURRENT_NORMAL.copy();
-					currentNormal.mul(normal);
-					
-					currentPose.store(BUF_FLOAT_16);
-					GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX, false, BUF_FLOAT_16);
-					
-					currentPose.invert();
-					currentPose.store(BUF_FLOAT_16);
-					GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX_INVERSE, false, BUF_FLOAT_16);
-					
-					currentNormal.store(BUF_FLOAT_9);
-					GL20.glUniformMatrix3fv(NORMAL_MATRIX, false, BUF_FLOAT_9);
+					applyTransformShaderMod(nodeModel);
 					
 					shaderModNodeRenderCommands.forEach(Runnable::run);
 				}
@@ -626,18 +544,18 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			});
 		}
 		else {
-			skinningCommands.parallelStream().forEach(Runnable::run);
-			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, positionBuffer);
-			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, positionsBufferViewData);
-			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, normalBuffer);
-			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, normalsBufferViewData);
-			
-			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, tangentBuffer);
-			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, tangentsBufferViewData);
-			
 			renderCommand.add(() -> {
+				skinningCommands.parallelStream().forEach(Runnable::run);
+				
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, positionBuffer);
+				GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, positionsBufferViewData);
+				
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, normalBuffer);
+				GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, normalsBufferViewData);
+				
+				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, tangentBuffer);
+				GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, tangentsBufferViewData);
+				
 				GL30.glBindVertexArray(glVertexArray);
 				GL11.glDrawArrays(mode, 0, pointCount);
 			});

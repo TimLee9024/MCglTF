@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apache.commons.io.IOUtils;
@@ -24,6 +27,11 @@ import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengl.GL40;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLCapabilities;
+
+import com.modularmods.mcgltf.iris.RenderedGltfModelGL30Iris;
+import com.modularmods.mcgltf.iris.RenderedGltfModelGL33Iris;
+import com.modularmods.mcgltf.iris.RenderedGltfModelGL40Iris;
+import com.modularmods.mcgltf.iris.RenderedGltfModelIris;
 
 import de.javagl.jgltf.model.GltfModel;
 import de.javagl.jgltf.model.io.Buffers;
@@ -62,7 +70,7 @@ public class MCglTF implements ModInitializer {
 	private final List<IGltfModelReceiver> gltfModelReceivers = new ArrayList<IGltfModelReceiver>();
 	private final List<Runnable> gltfRenderData = new ArrayList<Runnable>();
 	
-	private boolean isOptiFineExist;
+	private BooleanSupplier shaderModActive;
 	
 	public MCglTF() {
 		INSTANCE = this;
@@ -71,7 +79,64 @@ public class MCglTF implements ModInitializer {
 	
 	@Override
 	public void onInitialize() {
-		isOptiFineExist = FabricLoader.getInstance().isModLoaded("optifabric");
+		Consumer<Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>>> processRenderedGltfModelSelector;
+		if(FabricLoader.getInstance().isModLoaded("iris")) {
+			shaderModActive = net.irisshaders.iris.api.v0.IrisApi.getInstance()::isShaderPackInUse;
+			
+			processRenderedGltfModelSelector = (lookup) -> {
+				switch(renderedModelGLProfile) {
+				case GL43:
+					processRenderedGltfModelsGL43Iris(lookup);
+					break;
+				case GL40:
+					processRenderedGltfModelsGL40Iris(lookup);
+					break;
+				case GL33:
+					processRenderedGltfModelsGL33Iris(lookup);
+					break;
+				case GL30:
+					processRenderedGltfModelsGL30Iris(lookup);
+					break;
+				default:
+					GLCapabilities glCapabilities = GL.getCapabilities();
+					if(glCapabilities.glTexBufferRange != 0) processRenderedGltfModelsGL43Iris(lookup);
+					else if(glCapabilities.glGenTransformFeedbacks != 0) processRenderedGltfModelsGL40Iris(lookup);
+					else processRenderedGltfModelsGL33Iris(lookup);
+					break;
+				}
+			};
+		}
+		else {
+			if(FabricLoader.getInstance().isModLoaded("optifabric")) {
+				shaderModActive = () -> net.optifine.shaders.Shaders.isShaderPackInitialized && !net.optifine.shaders.Shaders.currentShaderName.equals(net.optifine.shaders.Shaders.SHADER_PACK_NAME_DEFAULT);
+			}
+			else {
+				shaderModActive = () -> false;
+			}
+			
+			processRenderedGltfModelSelector = (lookup) -> {
+				switch(renderedModelGLProfile) {
+				case GL43:
+					processRenderedGltfModelsGL43(lookup);
+					break;
+				case GL40:
+					processRenderedGltfModelsGL40(lookup);
+					break;
+				case GL33:
+					processRenderedGltfModelsGL33(lookup);
+					break;
+				case GL30:
+					processRenderedGltfModelsGL30(lookup);
+					break;
+				default:
+					GLCapabilities glCapabilities = GL.getCapabilities();
+					if(glCapabilities.glTexBufferRange != 0) processRenderedGltfModelsGL43(lookup);
+					else if(glCapabilities.glGenTransformFeedbacks != 0) processRenderedGltfModelsGL40(lookup);
+					else processRenderedGltfModelsGL33(lookup);
+					break;
+				}
+			};
+		}
 		
 		Minecraft.getInstance().execute(() -> {
 			lightTexture = Minecraft.getInstance().getTextureManager().getTexture(new ResourceLocation("dynamic/light_map_1"));
@@ -151,26 +216,7 @@ public class MCglTF implements ModInitializer {
 						e.printStackTrace();
 					}
 				});
-				switch(renderedModelGLProfile) {
-				case GL43:
-					processRenderedGltfModelsGL43(lookup);
-					break;
-				case GL40:
-					processRenderedGltfModelsGL40(lookup);
-					break;
-				case GL33:
-					processRenderedGltfModelsGL33(lookup);
-					break;
-				case GL30:
-					processRenderedGltfModelsGL30(lookup);
-					break;
-				default:
-					GLCapabilities glCapabilities = GL.getCapabilities();
-					if(glCapabilities.glTexBufferRange != 0) processRenderedGltfModelsGL43(lookup);
-					else if(glCapabilities.glGenTransformFeedbacks != 0) processRenderedGltfModelsGL40(lookup);
-					else processRenderedGltfModelsGL33(lookup);
-					break;
-				}
+				processRenderedGltfModelSelector.accept(lookup);
 				GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 				GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 				GL30.glBindVertexArray(0);
@@ -267,7 +313,7 @@ public class MCglTF implements ModInitializer {
 	}
 	
 	public boolean isShaderModActive() {
-		return isOptiFineExist && net.optifine.shaders.Shaders.isShaderPackInitialized && !net.optifine.shaders.Shaders.currentShaderName.equals(net.optifine.shaders.Shaders.SHADER_PACK_NAME_DEFAULT);
+		return shaderModActive.getAsBoolean();
 	}
 	
 	public static MCglTF getInstance() {
@@ -346,13 +392,13 @@ public class MCglTF implements ModInitializer {
 		GL20.glLinkProgram(glProgramSkinnig);
 	}
 	
-	private void processRenderedGltfModelsGL43(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
+	private void processRenderedGltfModels(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup, BiFunction<List<Runnable>, GltfModel, RenderedGltfModel> renderedGltfModelBuilder) {
 		lookup.forEach((modelLocation, receivers) -> {
 			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
 			do {
 				IGltfModelReceiver receiver = iterator.next();
 				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModel(gltfRenderData, receivers.getLeft());
+					RenderedGltfModel renderedModel = renderedGltfModelBuilder.apply(gltfRenderData, receivers.getLeft());
 					receiver.onReceiveSharedModel(renderedModel);
 					while(iterator.hasNext()) {
 						receiver = iterator.next();
@@ -365,77 +411,54 @@ public class MCglTF implements ModInitializer {
 			}
 			while(iterator.hasNext());
 		});
+	}
+	
+	private void processRenderedGltfModelsGL43(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
+		processRenderedGltfModels(lookup, RenderedGltfModel::new);
 		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
 		GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
 		GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
 	}
 	
 	private void processRenderedGltfModelsGL40(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
-		lookup.forEach((modelLocation, receivers) -> {
-			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
-			do {
-				IGltfModelReceiver receiver = iterator.next();
-				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModelGL40(gltfRenderData, receivers.getLeft());
-					receiver.onReceiveSharedModel(renderedModel);
-					while(iterator.hasNext()) {
-						receiver = iterator.next();
-						if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-							receiver.onReceiveSharedModel(renderedModel);
-						}
-					}
-					return;
-				}
-			}
-			while(iterator.hasNext());
-		});
+		processRenderedGltfModels(lookup, RenderedGltfModelGL40::new);
 		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
 		GL15.glBindBuffer(GL31.GL_TEXTURE_BUFFER, 0);
 		GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
 	}
 	
 	private void processRenderedGltfModelsGL33(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
-		lookup.forEach((modelLocation, receivers) -> {
-			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
-			do {
-				IGltfModelReceiver receiver = iterator.next();
-				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModelGL33(gltfRenderData, receivers.getLeft());
-					receiver.onReceiveSharedModel(renderedModel);
-					while(iterator.hasNext()) {
-						receiver = iterator.next();
-						if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-							receiver.onReceiveSharedModel(renderedModel);
-						}
-					}
-					return;
-				}
-			}
-			while(iterator.hasNext());
-		});
+		processRenderedGltfModels(lookup, RenderedGltfModelGL33::new);
 		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
 		GL15.glBindBuffer(GL31.GL_TEXTURE_BUFFER, 0);
 	}
 	
 	private void processRenderedGltfModelsGL30(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
-		lookup.forEach((modelLocation, receivers) -> {
-			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
-			do {
-				IGltfModelReceiver receiver = iterator.next();
-				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModelGL30(gltfRenderData, receivers.getLeft());
-					receiver.onReceiveSharedModel(renderedModel);
-					while(iterator.hasNext()) {
-						receiver = iterator.next();
-						if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-							receiver.onReceiveSharedModel(renderedModel);
-						}
-					}
-					return;
-				}
-			}
-			while(iterator.hasNext());
-		});
+		processRenderedGltfModels(lookup, RenderedGltfModelGL30::new);
+	}
+	
+	private void processRenderedGltfModelsGL43Iris(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
+		processRenderedGltfModels(lookup, RenderedGltfModelIris::new);
+		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+		GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
+		GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
+	}
+	
+	private void processRenderedGltfModelsGL40Iris(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
+		processRenderedGltfModels(lookup, RenderedGltfModelGL40Iris::new);
+		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+		GL15.glBindBuffer(GL31.GL_TEXTURE_BUFFER, 0);
+		GL40.glBindTransformFeedback(GL40.GL_TRANSFORM_FEEDBACK, 0);
+	}
+	
+	private void processRenderedGltfModelsGL33Iris(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
+		processRenderedGltfModels(lookup, RenderedGltfModelGL33Iris::new);
+		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
+		GL15.glBindBuffer(GL31.GL_TEXTURE_BUFFER, 0);
+	}
+	
+	private void processRenderedGltfModelsGL30Iris(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
+		processRenderedGltfModels(lookup, RenderedGltfModelGL30Iris::new);
 	}
 	
 	public enum EnumRenderedModelGLProfile {
