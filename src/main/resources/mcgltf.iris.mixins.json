@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "plugin": "com.modularmods.mcgltf.iris.mixin.IrisCompatMixinPlugin",
+  "package": "com.modularmods.mcgltf.iris.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+  	"MixinRenderStateShard",
+  	"MixinBufferUploader",
+  	"MixinGlStateManager"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

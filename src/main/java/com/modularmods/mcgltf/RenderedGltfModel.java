@@ -47,6 +47,7 @@ import de.javagl.jgltf.model.TextureModel;
 import de.javagl.jgltf.model.image.PixelData;
 import de.javagl.jgltf.model.image.PixelDatas;
 import de.javagl.jgltf.model.impl.DefaultNodeModel;
+import net.fabricmc.loader.api.FabricLoader;
 
 public class RenderedGltfModel {
 
@@ -69,8 +70,8 @@ public class RenderedGltfModel {
 	 * <a href="https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt">optifine/shaders.txt</a>
 	 */
 	public static final int COLOR_MAP_INDEX = GL13.GL_TEXTURE0;
-	public static final int NORMAL_MAP_INDEX = GL13.GL_TEXTURE1;
-	public static final int SPECULAR_MAP_INDEX = GL13.GL_TEXTURE3;
+	public static int NORMAL_MAP_INDEX = GL13.GL_TEXTURE1;
+	public static int SPECULAR_MAP_INDEX = GL13.GL_TEXTURE3;
 	
 	protected static final Runnable vanillaDefaultMaterialCommand = () -> {
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
@@ -78,16 +79,7 @@ public class RenderedGltfModel {
 		GL11.glEnable(GL11.GL_CULL_FACE);
 	};
 	
-	protected static final Runnable shaderModDefaultMaterialCommand = () -> {
-		GL13.glActiveTexture(COLOR_MAP_INDEX);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
-		GL13.glActiveTexture(NORMAL_MAP_INDEX);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultNormalMap());
-		GL13.glActiveTexture(SPECULAR_MAP_INDEX);
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultSpecularMap());
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		GL11.glEnable(GL11.GL_CULL_FACE);
-	};
+	protected static final Runnable shaderModDefaultMaterialCommand;
 	
 	protected static final int skinning_joint = 0;
 	protected static final int skinning_weight = 1;
@@ -120,6 +112,37 @@ public class RenderedGltfModel {
 	public final GltfModel gltfModel;
 	
 	public final List<RenderedGltfScene> renderedGltfScenes;
+	
+	static {
+		if(FabricLoader.getInstance().isModLoaded("iris")) {
+			shaderModDefaultMaterialCommand = () -> {
+				GL13.glActiveTexture(COLOR_MAP_INDEX);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
+				if(NORMAL_MAP_INDEX != -1) {
+					GL13.glActiveTexture(NORMAL_MAP_INDEX);
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultNormalMap());
+				}
+				if(SPECULAR_MAP_INDEX != -1) {
+					GL13.glActiveTexture(SPECULAR_MAP_INDEX);
+					GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultSpecularMap());
+				}
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				GL11.glEnable(GL11.GL_CULL_FACE);
+			};
+		}
+		else {
+			shaderModDefaultMaterialCommand = () -> {
+				GL13.glActiveTexture(COLOR_MAP_INDEX);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultColorMap());
+				GL13.glActiveTexture(NORMAL_MAP_INDEX);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultNormalMap());
+				GL13.glActiveTexture(SPECULAR_MAP_INDEX);
+				GL11.glBindTexture(GL11.GL_TEXTURE_2D, MCglTF.getInstance().getDefaultSpecularMap());
+				GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+				GL11.glEnable(GL11.GL_CULL_FACE);
+			};
+		}
+	}
 	
 	protected RenderedGltfModel(GltfModel gltfModel, List<RenderedGltfScene> renderedGltfScenes) {
 		this.gltfModel = gltfModel;

@@ -23,6 +23,9 @@
       "com.modularmods.mcgltf.MCglTF"
     ]
   },
+  "mixins": [
+    "mcgltf.iris.mixins.json"
+  ],
 
   "depends": {
     "fabricloader": ">=0.7.4",
@@ -30,9 +33,7 @@
     "minecraft": "1.16.x"
   },
   "suggests": {
-    "optifabric": "*"
-  },
-  "conflicts": {
-  	"iris": "*"
+    "optifabric": "*",
+    "iris": ">=1.4.0"
   }
 }
