@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.modularmods.mcgltf.MCglTF;
 import com.modularmods.mcgltf.RenderedGltfModel;
 import com.modularmods.mcgltf.mixin.Matrix4fAccessor;
+import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 
 import de.javagl.jgltf.model.GltfModel;
@@ -77,12 +78,22 @@ public class RenderedGltfModelIris extends RenderedGltfModel {
 		accessor.setM32(transform[14]);
 		accessor.setM33(transform[15]);
 		
+		if(NORMAL_MATRIX != -1) {
+			Matrix3f normal = new Matrix3f(pose);
+			normal.transpose();
+			Matrix3f currentNormal = CURRENT_NORMAL.copy();
+			currentNormal.mul(normal);
+			
+			currentNormal.store(BUF_FLOAT_9);
+			GL20.glUniformMatrix3fv(NORMAL_MATRIX, false, BUF_FLOAT_9);
+		}
+		
 		pose.transpose();
 		Matrix4f currentPose = CURRENT_POSE.copy();
 		currentPose.multiply(pose);
 		
-		CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.set(currentPose);
-		CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.upload();
+		currentPose.store(BUF_FLOAT_16);
+		GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX, false, BUF_FLOAT_16);
 	}
 
 	@Override

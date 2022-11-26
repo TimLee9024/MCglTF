@@ -147,6 +147,8 @@ public class IrisRenderingHook {
 		
 		if(phase != WorldRenderingPhase.NONE) {
 			int currentProgram = shaderInstance.getId();
+			RenderedGltfModel.MODEL_VIEW_MATRIX = GL20.glGetUniformLocation(currentProgram, "iris_ModelViewMat");
+			RenderedGltfModel.NORMAL_MATRIX = GL20.glGetUniformLocation(currentProgram, "iris_NormalMat");
 			int normals = GL20.glGetUniformLocation(currentProgram, "normals");
 			int specular = GL20.glGetUniformLocation(currentProgram, "specular");
 			
