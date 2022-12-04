@@ -12,7 +12,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '1.12.2-Forge-2.0.0.0'
+version = '1.12.2-Forge-2.0.0.1'
 group = 'com.modularmods.mcgltf' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'MCglTF'
 
