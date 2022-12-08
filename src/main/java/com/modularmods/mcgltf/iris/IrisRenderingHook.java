@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
@@ -17,7 +18,6 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.math.Vector3f;
 
 import net.coderbot.batchedentityrendering.impl.WrappableRenderType;
 import net.coderbot.iris.Iris;
@@ -216,8 +216,8 @@ public class IrisRenderingHook {
 			GL11.glBindTexture(GL11.GL_TEXTURE_2D, currentTextureColor);
 		}
 		else {
-			RenderedGltfModel.LIGHT0_DIRECTION = new Vector3f(shaderInstance.LIGHT0_DIRECTION.getFloatBuffer().get(0), shaderInstance.LIGHT0_DIRECTION.getFloatBuffer().get(1), shaderInstance.LIGHT0_DIRECTION.getFloatBuffer().get(2));
-			RenderedGltfModel.LIGHT1_DIRECTION = new Vector3f(shaderInstance.LIGHT1_DIRECTION.getFloatBuffer().get(0), shaderInstance.LIGHT1_DIRECTION.getFloatBuffer().get(1), shaderInstance.LIGHT1_DIRECTION.getFloatBuffer().get(2));
+			RenderedGltfModel.LIGHT0_DIRECTION = new Vector3f(shaderInstance.LIGHT0_DIRECTION.getFloatBuffer());
+			RenderedGltfModel.LIGHT1_DIRECTION = new Vector3f(shaderInstance.LIGHT1_DIRECTION.getFloatBuffer());
 			
 			GL13.glActiveTexture(GL13.GL_TEXTURE0);
 			int currentTextureColor = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);

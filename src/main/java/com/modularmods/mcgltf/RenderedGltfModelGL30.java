@@ -150,16 +150,9 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 					processMeshPrimitiveModelIncludedTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices, attributes, positionsAccessorModel, normalsAccessorModel, tangentsAccessorModel);
 					MaterialModel materialModel = meshPrimitiveModel.getMaterialModel();
 					if(materialModel != null) {
-						Object extras = materialModel.getExtras();
-						if(extras != null) {
-							Material renderedMaterial = obtainMaterial(gltfRenderData, extras);
-							vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
-							shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
-						}
-						else {
-							vanillaRenderCommands.add(vanillaDefaultMaterialCommand);
-							shaderModRenderCommands.add(shaderModDefaultMaterialCommand);
-						}
+						Material renderedMaterial = obtainMaterial(gltfRenderData, materialModel);
+						vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
+						shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
 					}
 					else {
 						vanillaRenderCommands.add(vanillaDefaultMaterialCommand);
@@ -169,21 +162,13 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 				else {
 					MaterialModel materialModel = meshPrimitiveModel.getMaterialModel();
 					if(materialModel != null) {
-						Object extras = materialModel.getExtras();
-						if(extras != null) {
-							Material renderedMaterial = obtainMaterial(gltfRenderData, extras);
-							vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
-							shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
-							if(renderedMaterial.normalTexture != null) {
-								processMeshPrimitiveModelMikkTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
-							}
-							else {
-								processMeshPrimitiveModelSimpleTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices, attributes, positionsAccessorModel, normalsAccessorModel);
-							}
+						Material renderedMaterial = obtainMaterial(gltfRenderData, materialModel);
+						vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
+						shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
+						if(renderedMaterial.normalTexture != null) {
+							processMeshPrimitiveModelMikkTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
 						}
 						else {
-							vanillaRenderCommands.add(vanillaDefaultMaterialCommand);
-							shaderModRenderCommands.add(shaderModDefaultMaterialCommand);
 							processMeshPrimitiveModelSimpleTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices, attributes, positionsAccessorModel, normalsAccessorModel);
 						}
 					}
@@ -197,21 +182,13 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			else {
 				MaterialModel materialModel = meshPrimitiveModel.getMaterialModel();
 				if(materialModel != null) {
-					Object extras = materialModel.getExtras();
-					if(extras != null) {
-						Material renderedMaterial = obtainMaterial(gltfRenderData, extras);
-						vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
-						shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
-						if(renderedMaterial.normalTexture != null) {
-							processMeshPrimitiveModelFlatNormalMikkTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
-						}
-						else {
-							processMeshPrimitiveModelFlatNormalSimpleTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
-						}
+					Material renderedMaterial = obtainMaterial(gltfRenderData, materialModel);
+					vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
+					shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
+					if(renderedMaterial.normalTexture != null) {
+						processMeshPrimitiveModelFlatNormalMikkTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
 					}
 					else {
-						vanillaRenderCommands.add(vanillaDefaultMaterialCommand);
-						shaderModRenderCommands.add(shaderModDefaultMaterialCommand);
 						processMeshPrimitiveModelFlatNormalSimpleTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
 					}
 				}

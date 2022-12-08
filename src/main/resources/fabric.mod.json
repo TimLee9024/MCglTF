@@ -10,7 +10,7 @@
   ],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/mcgltf",
-    "sources": "https://github.com/ModularMods/MCglTF/1.19-Fabric",
+    "sources": "https://github.com/ModularMods/MCglTF/1.19.3-Fabric",
     "issues": "https://github.com/ModularMods/MCglTF/issues"
   },
 
@@ -24,18 +24,17 @@
     ]
   },
   "mixins": [
-    "mcgltf.mixins.json",
     "mcgltf.iris.mixins.json"
   ],
 
   "depends": {
-    "fabricloader": ">=0.14.6",
+    "fabricloader": ">=0.14.11",
     "fabric": "*",
-    "minecraft": "~1.19",
+    "minecraft": "~1.19.3",
     "java": ">=17"
   },
   "suggests": {
     "optifabric": "*",
-    "iris": ">=1.4.0"
+    "iris": ">=1.4.6"
   }
 }
