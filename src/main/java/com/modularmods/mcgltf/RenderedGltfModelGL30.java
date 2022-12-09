@@ -13,10 +13,6 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import com.mojang.math.Matrix3f;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-
 import de.javagl.jgltf.model.AccessorByteData;
 import de.javagl.jgltf.model.AccessorData;
 import de.javagl.jgltf.model.AccessorDatas;
@@ -126,29 +122,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			vanillaRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f(findGlobalTransform(nodeModel));
-					Matrix3f normal = new Matrix3f(pose);
-					
-					pose.transpose();
-					Matrix4f currentPose = CURRENT_POSE.copy();
-					currentPose.multiply(pose);
-					
-					normal.transpose();
-					Matrix3f currentNormal = CURRENT_NORMAL.copy();
-					currentNormal.mul(normal);
-					
-					CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.set(currentPose);
-					CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.upload();
-					
-					currentNormal.transpose();
-					Vector3f light0Direction = LIGHT0_DIRECTION.copy();
-					Vector3f light1Direction = LIGHT1_DIRECTION.copy();
-					light0Direction.transform(currentNormal);
-					light1Direction.transform(currentNormal);
-					CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.set(light0Direction);
-					CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.set(light1Direction);
-					CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.upload();
-					CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.upload();
+					applyTransformVanilla(nodeModel);
 					
 					vanillaNodeRenderCommands.forEach(Runnable::run);
 				}
@@ -156,26 +130,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			shaderModRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f(findGlobalTransform(nodeModel));
-					Matrix3f normal = new Matrix3f(pose);
-					
-					pose.transpose();
-					Matrix4f currentPose = CURRENT_POSE.copy();
-					currentPose.multiply(pose);
-					
-					normal.transpose();
-					Matrix3f currentNormal = CURRENT_NORMAL.copy();
-					currentNormal.mul(normal);
-					
-					currentPose.store(BUF_FLOAT_16);
-					GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX, false, BUF_FLOAT_16);
-					
-					currentPose.invert();
-					currentPose.store(BUF_FLOAT_16);
-					GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX_INVERSE, false, BUF_FLOAT_16);
-					
-					currentNormal.store(BUF_FLOAT_9);
-					GL20.glUniformMatrix3fv(NORMAL_MATRIX, false, BUF_FLOAT_9);
+					applyTransformShaderMod(nodeModel);
 					
 					shaderModNodeRenderCommands.forEach(Runnable::run);
 				}
@@ -195,16 +150,9 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 					processMeshPrimitiveModelIncludedTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices, attributes, positionsAccessorModel, normalsAccessorModel, tangentsAccessorModel);
 					MaterialModel materialModel = meshPrimitiveModel.getMaterialModel();
 					if(materialModel != null) {
-						Object extras = materialModel.getExtras();
-						if(extras != null) {
-							Material renderedMaterial = obtainMaterial(gltfRenderData, extras);
-							vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
-							shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
-						}
-						else {
-							vanillaRenderCommands.add(vanillaDefaultMaterialCommand);
-							shaderModRenderCommands.add(shaderModDefaultMaterialCommand);
-						}
+						Material renderedMaterial = obtainMaterial(gltfRenderData, materialModel);
+						vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
+						shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
 					}
 					else {
 						vanillaRenderCommands.add(vanillaDefaultMaterialCommand);
@@ -214,21 +162,13 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 				else {
 					MaterialModel materialModel = meshPrimitiveModel.getMaterialModel();
 					if(materialModel != null) {
-						Object extras = materialModel.getExtras();
-						if(extras != null) {
-							Material renderedMaterial = obtainMaterial(gltfRenderData, extras);
-							vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
-							shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
-							if(renderedMaterial.normalTexture != null) {
-								processMeshPrimitiveModelMikkTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
-							}
-							else {
-								processMeshPrimitiveModelSimpleTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices, attributes, positionsAccessorModel, normalsAccessorModel);
-							}
+						Material renderedMaterial = obtainMaterial(gltfRenderData, materialModel);
+						vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
+						shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
+						if(renderedMaterial.normalTexture != null) {
+							processMeshPrimitiveModelMikkTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
 						}
 						else {
-							vanillaRenderCommands.add(vanillaDefaultMaterialCommand);
-							shaderModRenderCommands.add(shaderModDefaultMaterialCommand);
 							processMeshPrimitiveModelSimpleTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices, attributes, positionsAccessorModel, normalsAccessorModel);
 						}
 					}
@@ -242,21 +182,13 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			else {
 				MaterialModel materialModel = meshPrimitiveModel.getMaterialModel();
 				if(materialModel != null) {
-					Object extras = materialModel.getExtras();
-					if(extras != null) {
-						Material renderedMaterial = obtainMaterial(gltfRenderData, extras);
-						vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
-						shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
-						if(renderedMaterial.normalTexture != null) {
-							processMeshPrimitiveModelFlatNormalMikkTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
-						}
-						else {
-							processMeshPrimitiveModelFlatNormalSimpleTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
-						}
+					Material renderedMaterial = obtainMaterial(gltfRenderData, materialModel);
+					vanillaRenderCommands.add(renderedMaterial.vanillaMaterialCommand);
+					shaderModRenderCommands.add(renderedMaterial.shaderModMaterialCommand);
+					if(renderedMaterial.normalTexture != null) {
+						processMeshPrimitiveModelFlatNormalMikkTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
 					}
 					else {
-						vanillaRenderCommands.add(vanillaDefaultMaterialCommand);
-						shaderModRenderCommands.add(shaderModDefaultMaterialCommand);
 						processMeshPrimitiveModelFlatNormalSimpleTangent(gltfRenderData, nodeModel, meshModel, meshPrimitiveModel, renderCommand, jointMatrices);
 					}
 				}

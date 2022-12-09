@@ -1,19 +1,10 @@
 {
 	"homepage": "https://www.curseforge.com/minecraft/mc-mods/mcgltf/",
-	"1.19.2": {
-		"1.19.2-Forge-2.0.0.0": "Update to meet Vanilla's minimun OpenGL requirement."
-	},
-	"1.19": {
-		"1.19.2-Forge-2.0.0.0": "Update to meet Vanilla's minimun OpenGL requirement.",
-		"1.19-Forge-1.2.0.1": "Fix animation cause game crash, and an optimization forgot to reimplement in last update.",
-		"1.19-Forge-1.2.0.0": "This update break compatibility with previous version, please visit homepage for more info.",
-		"1.19-Forge-1.0.1.0": "Multi Threaded Model Loading and Custom RenderedGltfModel",
-		"1.19-Forge-1.0.0.0": "Initial release"
+	"1.19.3": {
+		"1.19.3-Forge-2.1.0.0": "Initial release"
 	},
 	"promos": {
-		"1.19.2-latest": "1.19.2-Forge-2.0.0.0",
-		"1.19.2-recommended": "1.19.2-Forge-2.0.0.0",
-		"1.19-latest": "1.19.2-Forge-2.0.0.0",
-		"1.19-recommended": "1.19.2-Forge-2.0.0.0"
+		"1.19.3-latest": "1.19.3-Forge-2.1.0.0",
+		"1.19.3-recommended": "1.19.3-Forge-2.1.0.0"
 	}
 }
