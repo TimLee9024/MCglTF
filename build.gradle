@@ -16,9 +16,15 @@ repositories {
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
+	maven {
+		url "https://cursemaven.com"
+		content {
+			includeGroup "curse.maven"
+		}
+	}
 	flatDir {
-        dirs 'libs'
-    }
+		dirs 'libs'
+	}
 }
 
 dependencies {
@@ -32,6 +38,7 @@ dependencies {
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
+	modImplementation "curse.maven:irisshaders-455508:4143798"
 	implementation fileTree(dir: 'libs', include: '*.jar')
 }
 
