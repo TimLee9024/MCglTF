@@ -39,8 +39,6 @@ public class RenderedGltfSceneGL33Iris extends RenderedGltfSceneGL33 {
 			GL20.glUseProgram(RenderedGltfModel.CURRENT_SHADER_INSTANCE.getId());
 		}
 		
-		GL20.glVertexAttrib2f(RenderedGltfModel.mc_midTexCoord, 1.0F, 1.0F);
-		
 		shaderModRenderCommands.forEach(Runnable::run);
 		
 		RenderedGltfModel.NODE_GLOBAL_TRANSFORMATION_LOOKUP_CACHE.clear();
