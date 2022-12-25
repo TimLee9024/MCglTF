@@ -1,6 +1,7 @@
 {
 	"homepage": "https://www.curseforge.com/minecraft/mc-mods/mcgltf/",
 	"1.18.2": {
+		"1.18.2-Forge-2.0.2.0": "More proper solution to the POM of BSL Shaders.",
 		"1.18.2-Forge-2.0.0.0": "Update to meet Vanilla's minimun OpenGL requirement.",
 		"1.18.2-Forge-1.2.0.1": "Fix animation cause game crash, and an optimization forgot to reimplement in last update.",
 		"1.18.2-Forge-1.2.0.0": "This update break compatibility with previous version, please visit homepage for more info.",
@@ -9,7 +10,7 @@
 		"1.18.2-Forge-1.0.0.0": "Initial release"
 	},
 	"promos": {
-		"1.18.2-latest": "1.18.2-Forge-2.0.0.0",
-		"1.18.2-recommended": "1.18.2-Forge-2.0.0.0"
+		"1.18.2-latest": "1.18.2-Forge-2.0.2.0",
+		"1.18.2-recommended": "1.18.2-Forge-2.0.2.0"
 	}
 }
