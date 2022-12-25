@@ -101,7 +101,6 @@ public class RenderedGltfSceneGL40 extends RenderedGltfScene {
 		GL13.glActiveTexture(GL13.GL_TEXTURE0);
 		int currentTexture0 = GL11.glGetInteger(GL11.GL_TEXTURE_BINDING_2D);
 		
-		GL20.glVertexAttrib2f(RenderedGltfModel.mc_midTexCoord, 1.0F, 1.0F);
 		shaderModRenderCommands.forEach(Runnable::run);
 		
 		GL13.glActiveTexture(GL13.GL_TEXTURE3);
