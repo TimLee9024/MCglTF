@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import org.apache.commons.io.IOUtils;
@@ -349,14 +350,14 @@ public class MCglTF {
 		GL30.glTransformFeedbackVaryings(glProgramSkinnig, new CharSequence[]{"outPosition", "outNormal", "outTangent"}, GL30.GL_SEPARATE_ATTRIBS);
 		GL20.glLinkProgram(glProgramSkinnig);
 	}
-	
-	private void processRenderedGltfModelsGL43(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
+
+	private void processRenderedGltfModels(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup, BiFunction<List<Runnable>, GltfModel, RenderedGltfModel> renderedGltfModelBuilder) {
 		lookup.forEach((modelLocation, receivers) -> {
 			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
 			do {
 				IGltfModelReceiver receiver = iterator.next();
 				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModel(gltfRenderData, receivers.getLeft());
+					RenderedGltfModel renderedModel = renderedGltfModelBuilder.apply(gltfRenderData, receivers.getLeft());
 					receiver.onReceiveSharedModel(renderedModel);
 					while(iterator.hasNext()) {
 						receiver = iterator.next();
@@ -369,6 +370,10 @@ public class MCglTF {
 			}
 			while(iterator.hasNext());
 		});
+	}
+	
+	private void processRenderedGltfModelsGL43(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
+		processRenderedGltfModels(lookup, RenderedGltfModel::new);
 		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
 		GL15.glBindBuffer(GL43.GL_SHADER_STORAGE_BUFFER, 0);
 		GL30.glBindVertexArray(0);
@@ -376,24 +381,7 @@ public class MCglTF {
 	}
 	
 	private void processRenderedGltfModelsGL40(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
-		lookup.forEach((modelLocation, receivers) -> {
-			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
-			do {
-				IGltfModelReceiver receiver = iterator.next();
-				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModelGL40(gltfRenderData, receivers.getLeft());
-					receiver.onReceiveSharedModel(renderedModel);
-					while(iterator.hasNext()) {
-						receiver = iterator.next();
-						if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-							receiver.onReceiveSharedModel(renderedModel);
-						}
-					}
-					return;
-				}
-			}
-			while(iterator.hasNext());
-		});
+		processRenderedGltfModels(lookup, RenderedGltfModelGL40::new);
 		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
 		GL15.glBindBuffer(GL31.GL_TEXTURE_BUFFER, 0);
 		GL30.glBindVertexArray(0);
@@ -401,70 +389,19 @@ public class MCglTF {
 	}
 	
 	private void processRenderedGltfModelsGL33(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
-		lookup.forEach((modelLocation, receivers) -> {
-			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
-			do {
-				IGltfModelReceiver receiver = iterator.next();
-				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModelGL33(gltfRenderData, receivers.getLeft());
-					receiver.onReceiveSharedModel(renderedModel);
-					while(iterator.hasNext()) {
-						receiver = iterator.next();
-						if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-							receiver.onReceiveSharedModel(renderedModel);
-						}
-					}
-					return;
-				}
-			}
-			while(iterator.hasNext());
-		});
+		processRenderedGltfModels(lookup, RenderedGltfModelGL33::new);
 		GL15.glBindBuffer(GL30.GL_TRANSFORM_FEEDBACK_BUFFER, 0);
 		GL15.glBindBuffer(GL31.GL_TEXTURE_BUFFER, 0);
 		GL30.glBindVertexArray(0);
 	}
 	
 	private void processRenderedGltfModelsGL30(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
-		lookup.forEach((modelLocation, receivers) -> {
-			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
-			do {
-				IGltfModelReceiver receiver = iterator.next();
-				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModelGL30(gltfRenderData, receivers.getLeft());
-					receiver.onReceiveSharedModel(renderedModel);
-					while(iterator.hasNext()) {
-						receiver = iterator.next();
-						if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-							receiver.onReceiveSharedModel(renderedModel);
-						}
-					}
-					return;
-				}
-			}
-			while(iterator.hasNext());
-		});
+		processRenderedGltfModels(lookup, RenderedGltfModelGL30::new);
 		GL30.glBindVertexArray(0);
 	}
 	
 	private void processRenderedGltfModelsGL20(Map<ResourceLocation, MutablePair<GltfModel, List<IGltfModelReceiver>>> lookup) {
-		lookup.forEach((modelLocation, receivers) -> {
-			Iterator<IGltfModelReceiver> iterator = receivers.getRight().iterator();
-			do {
-				IGltfModelReceiver receiver = iterator.next();
-				if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-					RenderedGltfModel renderedModel = new RenderedGltfModelGL20(gltfRenderData, receivers.getLeft());
-					receiver.onReceiveSharedModel(renderedModel);
-					while(iterator.hasNext()) {
-						receiver = iterator.next();
-						if(receiver.isReceiveSharedModel(receivers.getLeft(), gltfRenderData)) {
-							receiver.onReceiveSharedModel(renderedModel);
-						}
-					}
-					return;
-				}
-			}
-			while(iterator.hasNext());
-		});
+		processRenderedGltfModels(lookup, RenderedGltfModelGL20::new);
 	}
 	
 	public enum EnumRenderedModelGLProfile {

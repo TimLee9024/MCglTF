@@ -42,7 +42,6 @@ public class RenderedGltfSceneGL40 extends RenderedGltfScene {
 			GL20.glUseProgram(currentProgram);
 		}
 		
-		GL20.glVertexAttrib2f(RenderedGltfModel.mc_midTexCoord, 1.0F, 1.0F);
 		shaderModRenderCommands.forEach(Runnable::run);
 		
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
