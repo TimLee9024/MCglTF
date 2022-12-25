@@ -261,29 +261,7 @@ public class RenderedGltfModel {
 			vanillaRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f(findGlobalTransform(nodeModel));
-					Matrix3f normal = new Matrix3f(pose);
-					
-					pose.transpose();
-					Matrix4f currentPose = CURRENT_POSE.copy();
-					currentPose.multiply(pose);
-					
-					normal.transpose();
-					Matrix3f currentNormal = CURRENT_NORMAL.copy();
-					currentNormal.mul(normal);
-					
-					CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.set(currentPose);
-					CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.upload();
-					
-					currentNormal.transpose();
-					Vector3f light0Direction = LIGHT0_DIRECTION.copy();
-					Vector3f light1Direction = LIGHT1_DIRECTION.copy();
-					light0Direction.transform(currentNormal);
-					light1Direction.transform(currentNormal);
-					CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.set(light0Direction);
-					CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.set(light1Direction);
-					CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.upload();
-					CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.upload();
+					applyTransformVanilla(nodeModel);
 					
 					vanillaNodeRenderCommands.forEach(Runnable::run);
 				}
@@ -291,26 +269,7 @@ public class RenderedGltfModel {
 			shaderModRenderCommands.add(() -> {
 				float[] scale = nodeModel.getScale();
 				if(scale == null || scale[0] != 0.0F || scale[1] != 0.0F || scale[2] != 0.0F) {
-					Matrix4f pose = new Matrix4f(findGlobalTransform(nodeModel));
-					Matrix3f normal = new Matrix3f(pose);
-					
-					pose.transpose();
-					Matrix4f currentPose = CURRENT_POSE.copy();
-					currentPose.multiply(pose);
-					
-					normal.transpose();
-					Matrix3f currentNormal = CURRENT_NORMAL.copy();
-					currentNormal.mul(normal);
-					
-					currentPose.store(BUF_FLOAT_16);
-					GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX, false, BUF_FLOAT_16);
-					
-					currentPose.invert();
-					currentPose.store(BUF_FLOAT_16);
-					GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX_INVERSE, false, BUF_FLOAT_16);
-					
-					currentNormal.store(BUF_FLOAT_9);
-					GL20.glUniformMatrix3fv(NORMAL_MATRIX, false, BUF_FLOAT_9);
+					applyTransformShaderMod(nodeModel);
 					
 					shaderModNodeRenderCommands.forEach(Runnable::run);
 				}
@@ -498,6 +457,26 @@ public class RenderedGltfModel {
 					texcoordsAccessorModel.getByteStride(),
 					texcoordsAccessorModel.getByteOffset());
 			GL20.glEnableVertexAttribArray(vaUV0);
+			
+			AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+			if(texcoords1AccessorModel != null) {
+				texcoordsAccessorModel = texcoords1AccessorModel;
+				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+				}
+				else {
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				}
+			}
+			GL20.glVertexAttribPointer(
+					mc_midTexCoord,
+					texcoordsAccessorModel.getElementType().getNumComponents(),
+					texcoordsAccessorModel.getComponentType(),
+					false,
+					texcoordsAccessorModel.getByteStride(),
+					texcoordsAccessorModel.getByteOffset());
+			GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		}
 		
 		int mode = meshPrimitiveModel.getMode();
@@ -628,6 +607,26 @@ public class RenderedGltfModel {
 					texcoordsAccessorModel.getByteStride(),
 					texcoordsAccessorModel.getByteOffset());
 			GL20.glEnableVertexAttribArray(vaUV0);
+			
+			AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+			if(texcoords1AccessorModel != null) {
+				texcoordsAccessorModel = texcoords1AccessorModel;
+				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+				}
+				else {
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				}
+			}
+			GL20.glVertexAttribPointer(
+					mc_midTexCoord,
+					texcoordsAccessorModel.getElementType().getNumComponents(),
+					texcoordsAccessorModel.getComponentType(),
+					false,
+					texcoordsAccessorModel.getByteStride(),
+					texcoordsAccessorModel.getByteOffset());
+			GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		}
 		
 		int mode = meshPrimitiveModel.getMode();
@@ -748,6 +747,26 @@ public class RenderedGltfModel {
 				texcoordsAccessorModel.getByteStride(),
 				texcoordsAccessorModel.getByteOffset());
 		GL20.glEnableVertexAttribArray(vaUV0);
+		
+		AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+		if(texcoords1AccessorModel != null) {
+			texcoordsAccessorModel = texcoords1AccessorModel;
+			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+			}
+			else {
+				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+			}
+		}
+		GL20.glVertexAttribPointer(
+				mc_midTexCoord,
+				texcoordsAccessorModel.getElementType().getNumComponents(),
+				texcoordsAccessorModel.getComponentType(),
+				false,
+				texcoordsAccessorModel.getByteStride(),
+				texcoordsAccessorModel.getByteOffset());
+		GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		
 		int mode = meshPrimitiveModel.getMode();
 		int count = positionsAccessorModel.getCount();
@@ -872,6 +891,26 @@ public class RenderedGltfModel {
 					texcoordsAccessorModel.getByteStride(),
 					texcoordsAccessorModel.getByteOffset());
 			GL20.glEnableVertexAttribArray(vaUV0);
+			
+			AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+			if(texcoords1AccessorModel != null) {
+				texcoordsAccessorModel = texcoords1AccessorModel;
+				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+				}
+				else {
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				}
+			}
+			GL20.glVertexAttribPointer(
+					mc_midTexCoord,
+					texcoordsAccessorModel.getElementType().getNumComponents(),
+					texcoordsAccessorModel.getComponentType(),
+					false,
+					texcoordsAccessorModel.getByteStride(),
+					texcoordsAccessorModel.getByteOffset());
+			GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		}
 		
 		int mode = meshPrimitiveModel.getMode();
@@ -991,6 +1030,26 @@ public class RenderedGltfModel {
 				texcoordsAccessorModel.getByteStride(),
 				texcoordsAccessorModel.getByteOffset());
 		GL20.glEnableVertexAttribArray(vaUV0);
+		
+		AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+		if(texcoords1AccessorModel != null) {
+			texcoordsAccessorModel = texcoords1AccessorModel;
+			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+			}
+			else {
+				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+			}
+		}
+		GL20.glVertexAttribPointer(
+				mc_midTexCoord,
+				texcoordsAccessorModel.getElementType().getNumComponents(),
+				texcoordsAccessorModel.getComponentType(),
+				false,
+				texcoordsAccessorModel.getByteStride(),
+				texcoordsAccessorModel.getByteOffset());
+		GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		
 		int mode = meshPrimitiveModel.getMode();
 		int count = positionsAccessorModel.getCount();
@@ -1268,6 +1327,26 @@ public class RenderedGltfModel {
 					texcoordsAccessorModel.getByteStride(),
 					texcoordsAccessorModel.getByteOffset());
 			GL20.glEnableVertexAttribArray(vaUV0);
+			
+			AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+			if(texcoords1AccessorModel != null) {
+				texcoordsAccessorModel = texcoords1AccessorModel;
+				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+				}
+				else {
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				}
+			}
+			GL20.glVertexAttribPointer(
+					mc_midTexCoord,
+					texcoordsAccessorModel.getElementType().getNumComponents(),
+					texcoordsAccessorModel.getComponentType(),
+					false,
+					texcoordsAccessorModel.getByteStride(),
+					texcoordsAccessorModel.getByteOffset());
+			GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		}
 		
 		int mode = meshPrimitiveModel.getMode();
@@ -1485,6 +1564,26 @@ public class RenderedGltfModel {
 					texcoordsAccessorModel.getByteStride(),
 					texcoordsAccessorModel.getByteOffset());
 			GL20.glEnableVertexAttribArray(vaUV0);
+			
+			AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+			if(texcoords1AccessorModel != null) {
+				texcoordsAccessorModel = texcoords1AccessorModel;
+				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+				}
+				else {
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				}
+			}
+			GL20.glVertexAttribPointer(
+					mc_midTexCoord,
+					texcoordsAccessorModel.getElementType().getNumComponents(),
+					texcoordsAccessorModel.getComponentType(),
+					false,
+					texcoordsAccessorModel.getByteStride(),
+					texcoordsAccessorModel.getByteOffset());
+			GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		}
 		
 		int mode = meshPrimitiveModel.getMode();
@@ -1692,6 +1791,26 @@ public class RenderedGltfModel {
 				texcoordsAccessorModel.getByteStride(),
 				texcoordsAccessorModel.getByteOffset());
 		GL20.glEnableVertexAttribArray(vaUV0);
+		
+		AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+		if(texcoords1AccessorModel != null) {
+			texcoordsAccessorModel = texcoords1AccessorModel;
+			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+			}
+			else {
+				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+			}
+		}
+		GL20.glVertexAttribPointer(
+				mc_midTexCoord,
+				texcoordsAccessorModel.getElementType().getNumComponents(),
+				texcoordsAccessorModel.getComponentType(),
+				false,
+				texcoordsAccessorModel.getByteStride(),
+				texcoordsAccessorModel.getByteOffset());
+		GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		
 		int mode = meshPrimitiveModel.getMode();
 		renderCommand.add(() -> {
@@ -1903,6 +2022,26 @@ public class RenderedGltfModel {
 					texcoordsAccessorModel.getByteStride(),
 					texcoordsAccessorModel.getByteOffset());
 			GL20.glEnableVertexAttribArray(vaUV0);
+			
+			AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+			if(texcoords1AccessorModel != null) {
+				texcoordsAccessorModel = texcoords1AccessorModel;
+				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+				}
+				else {
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				}
+			}
+			GL20.glVertexAttribPointer(
+					mc_midTexCoord,
+					texcoordsAccessorModel.getElementType().getNumComponents(),
+					texcoordsAccessorModel.getComponentType(),
+					false,
+					texcoordsAccessorModel.getByteStride(),
+					texcoordsAccessorModel.getByteOffset());
+			GL20.glEnableVertexAttribArray(mc_midTexCoord);
 		}
 		
 		int mode = meshPrimitiveModel.getMode();
@@ -2110,11 +2249,80 @@ public class RenderedGltfModel {
 				texcoordsAccessorModel.getByteOffset());
 		GL20.glEnableVertexAttribArray(vaUV0);
 		
+		AccessorModel texcoords1AccessorModel = attributes.get("TEXCOORD_1");
+		if(texcoords1AccessorModel != null) {
+			texcoordsAccessorModel = texcoords1AccessorModel;
+			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
+			}
+			else {
+				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+			}
+		}
+		GL20.glVertexAttribPointer(
+				mc_midTexCoord,
+				texcoordsAccessorModel.getElementType().getNumComponents(),
+				texcoordsAccessorModel.getComponentType(),
+				false,
+				texcoordsAccessorModel.getByteStride(),
+				texcoordsAccessorModel.getByteOffset());
+		GL20.glEnableVertexAttribArray(mc_midTexCoord);
+		
 		int mode = meshPrimitiveModel.getMode();
 		renderCommand.add(() -> {
 			GL30.glBindVertexArray(glVertexArray);
 			GL40.glDrawTransformFeedback(mode, glTransformFeedback);
 		});
+	}
+	
+	protected void applyTransformVanilla(NodeModel nodeModel) {
+		Matrix4f pose = new Matrix4f(findGlobalTransform(nodeModel));
+		Matrix3f normal = new Matrix3f(pose);
+		
+		pose.transpose();
+		Matrix4f currentPose = CURRENT_POSE.copy();
+		currentPose.multiply(pose);
+		
+		normal.transpose();
+		Matrix3f currentNormal = CURRENT_NORMAL.copy();
+		currentNormal.mul(normal);
+		
+		CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.set(currentPose);
+		CURRENT_SHADER_INSTANCE.MODEL_VIEW_MATRIX.upload();
+		
+		currentNormal.transpose();
+		Vector3f light0Direction = LIGHT0_DIRECTION.copy();
+		Vector3f light1Direction = LIGHT1_DIRECTION.copy();
+		light0Direction.transform(currentNormal);
+		light1Direction.transform(currentNormal);
+		CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.set(light0Direction);
+		CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.set(light1Direction);
+		CURRENT_SHADER_INSTANCE.LIGHT0_DIRECTION.upload();
+		CURRENT_SHADER_INSTANCE.LIGHT1_DIRECTION.upload();
+	}
+	
+	protected void applyTransformShaderMod(NodeModel nodeModel) {
+		Matrix4f pose = new Matrix4f(findGlobalTransform(nodeModel));
+		Matrix3f normal = new Matrix3f(pose);
+		
+		pose.transpose();
+		Matrix4f currentPose = CURRENT_POSE.copy();
+		currentPose.multiply(pose);
+		
+		normal.transpose();
+		Matrix3f currentNormal = CURRENT_NORMAL.copy();
+		currentNormal.mul(normal);
+		
+		currentPose.store(BUF_FLOAT_16);
+		GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX, false, BUF_FLOAT_16);
+		
+		currentPose.invert();
+		currentPose.store(BUF_FLOAT_16);
+		GL20.glUniformMatrix4fv(MODEL_VIEW_MATRIX_INVERSE, false, BUF_FLOAT_16);
+		
+		currentNormal.store(BUF_FLOAT_9);
+		GL20.glUniformMatrix3fv(NORMAL_MATRIX, false, BUF_FLOAT_9);
 	}
 	
 	public static class Material {
