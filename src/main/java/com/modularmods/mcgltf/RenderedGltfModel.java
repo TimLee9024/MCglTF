@@ -2072,7 +2072,6 @@ public class RenderedGltfModel {
 		
 		AccessorModel positionsAccessorModel = attributes.get("POSITION");
 		AccessorModel normalsAccessorModel = obtainNormalsAccessorModel(positionsAccessorModel);
-		AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 		List<AccessorFloatData> targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
 		List<AccessorFloatData> normalTargetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
 		if(createPositionNormalMorphTarget(morphTargets, positionsAccessorModel, normalsAccessorModel, targetAccessorDatas, normalTargetAccessorDatas)) {
@@ -2118,6 +2117,7 @@ public class RenderedGltfModel {
 			GL20.glEnableVertexAttribArray(skinning_normal);
 		}
 		
+		AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 		AccessorModel tangentsAccessorModel = obtainTangentsAccessorModel(normalsAccessorModel);
 		targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
 		if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel, tangentsAccessorModel, normalTargetAccessorDatas)) {
@@ -3739,12 +3739,13 @@ public class RenderedGltfModel {
 		float weights[] = new float[targetAccessorDatas.size()];
 		int numComponents = 3;
 		int numElements = morphedAccessorData.getNumElements();
-		command.add(() -> {
-			if(nodeModel.getWeights() != null) System.arraycopy(nodeModel.getWeights(), 0, weights, 0, weights.length);
-			else if(meshModel.getWeights() != null) System.arraycopy(meshModel.getWeights(), 0, weights, 0, weights.length);
-			
-			for(int e = 0; e < numElements; e++) {
-				for(int c = 0; c < numComponents; c++) {
+		
+		List<Runnable> morphingCommands = new ArrayList<Runnable>(numElements * numComponents);
+		for(int element = 0; element < numElements; element++) {
+			for(int component = 0; component < numComponents; component++) {
+				int e = element;
+				int c = component;
+				morphingCommands.add(() -> {
 					float r = baseAccessorData.get(e, c);
 					for(int i = 0; i < weights.length; i++) {
 						AccessorFloatData target = targetAccessorDatas.get(i);
@@ -3753,8 +3754,16 @@ public class RenderedGltfModel {
 						}
 					}
 					morphedAccessorData.set(e, c, r);
-				}
+				});
 			}
+		}
+		
+		command.add(() -> {
+			if(nodeModel.getWeights() != null) System.arraycopy(nodeModel.getWeights(), 0, weights, 0, weights.length);
+			else if(meshModel.getWeights() != null) System.arraycopy(meshModel.getWeights(), 0, weights, 0, weights.length);
+			
+			morphingCommands.parallelStream().forEach(Runnable::run);
+			
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glBufferView);
 			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, morphedBufferViewData);
 		});
@@ -3795,12 +3804,13 @@ public class RenderedGltfModel {
 		float weights[] = new float[targetAccessorDatas.size()];
 		int numComponents = 4;
 		int numElements = morphedAccessorData.getNumElements();
-		command.add(() -> {
-			if(nodeModel.getWeights() != null) System.arraycopy(nodeModel.getWeights(), 0, weights, 0, weights.length);
-			else if(meshModel.getWeights() != null) System.arraycopy(meshModel.getWeights(), 0, weights, 0, weights.length);
-			
-			for(int e = 0; e < numElements; e++) {
-				for(int c = 0; c < numComponents; c++) {
+		
+		List<Runnable> morphingCommands = new ArrayList<Runnable>(numElements * numComponents);
+		for(int element = 0; element < numElements; element++) {
+			for(int component = 0; component < numComponents; component++) {
+				int e = element;
+				int c = component;
+				morphingCommands.add(() -> {
 					float r = baseAccessorData.get(e, c);
 					for(int i = 0; i < weights.length; i++) {
 						AccessorFloatData target = targetAccessorDatas.get(i);
@@ -3809,8 +3819,16 @@ public class RenderedGltfModel {
 						}
 					}
 					morphedAccessorData.set(e, c, r);
-				}
+				});
 			}
+		}
+		
+		command.add(() -> {
+			if(nodeModel.getWeights() != null) System.arraycopy(nodeModel.getWeights(), 0, weights, 0, weights.length);
+			else if(meshModel.getWeights() != null) System.arraycopy(meshModel.getWeights(), 0, weights, 0, weights.length);
+			
+			morphingCommands.parallelStream().forEach(Runnable::run);
+			
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glBufferView);
 			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, morphedBufferViewData);
 		});
@@ -3850,12 +3868,13 @@ public class RenderedGltfModel {
 		float weights[] = new float[targetAccessorDatas.size()];
 		int numComponents = 2;
 		int numElements = morphedAccessorData.getNumElements();
-		command.add(() -> {
-			if(nodeModel.getWeights() != null) System.arraycopy(nodeModel.getWeights(), 0, weights, 0, weights.length);
-			else if(meshModel.getWeights() != null) System.arraycopy(meshModel.getWeights(), 0, weights, 0, weights.length);
-			
-			for(int e = 0; e < numElements; e++) {
-				for(int c = 0; c < numComponents; c++) {
+		
+		List<Runnable> morphingCommands = new ArrayList<Runnable>(numElements * numComponents);
+		for(int element = 0; element < numElements; element++) {
+			for(int component = 0; component < numComponents; component++) {
+				int e = element;
+				int c = component;
+				morphingCommands.add(() -> {
 					float r = baseAccessorData.get(e, c);
 					for(int i = 0; i < weights.length; i++) {
 						AccessorFloatData target = targetAccessorDatas.get(i);
@@ -3864,8 +3883,16 @@ public class RenderedGltfModel {
 						}
 					}
 					morphedAccessorData.set(e, c, r);
-				}
+				});
 			}
+		}
+		
+		command.add(() -> {
+			if(nodeModel.getWeights() != null) System.arraycopy(nodeModel.getWeights(), 0, weights, 0, weights.length);
+			else if(meshModel.getWeights() != null) System.arraycopy(meshModel.getWeights(), 0, weights, 0, weights.length);
+			
+			morphingCommands.parallelStream().forEach(Runnable::run);
+			
 			GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, glBufferView);
 			GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, morphedBufferViewData);
 		});
