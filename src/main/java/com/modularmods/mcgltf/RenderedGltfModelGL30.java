@@ -314,7 +314,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		if(colorsAccessorModel != null) {
 			colorsAccessorModel = obtainVec4ColorsAccessorModel(colorsAccessorModel);
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createColorMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createColorMorphTarget(morphTargets, targetAccessorDatas, "COLOR_0")) {
 				colorsAccessorModel = bindColorMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, colorsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -333,7 +333,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 		if(texcoordsAccessorModel != null) {
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_0")) {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -352,7 +352,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			if(texcoords1AccessorModel != null) {
 				texcoordsAccessorModel = texcoords1AccessorModel;
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_1")) {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
@@ -500,7 +500,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		if(colorsAccessorModel != null) {
 			colorsAccessorModel = obtainVec4ColorsAccessorModel(colorsAccessorModel);
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createColorMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createColorMorphTarget(morphTargets, targetAccessorDatas, "COLOR_0")) {
 				colorsAccessorModel = bindColorMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, colorsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -519,7 +519,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 		if(texcoordsAccessorModel != null) {
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_0")) {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -538,7 +538,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			if(texcoords1AccessorModel != null) {
 				texcoordsAccessorModel = texcoords1AccessorModel;
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_1")) {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
@@ -630,7 +630,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 		AccessorModel outputTangentsAccessorModel;
 		AccessorModel tangentsAccessorModel = obtainTangentsAccessorModel(meshPrimitiveModel, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel);
-		if(createMorphTarget(morphTargets, targetAccessorDatas, "TANGENT")) {
+		if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel, "TEXCOORD_0", tangentsAccessorModel)) {
 			outputTangentsAccessorModel = obtainVec3FloatMorphedModel(nodeModel, meshModel, renderCommand, tangentsAccessorModel, targetAccessorDatas);
 		}
 		else {
@@ -695,7 +695,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		if(colorsAccessorModel != null) {
 			colorsAccessorModel = obtainVec4ColorsAccessorModel(colorsAccessorModel);
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createColorMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createColorMorphTarget(morphTargets, targetAccessorDatas, "COLOR_0")) {
 				colorsAccessorModel = bindColorMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, colorsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -712,7 +712,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		}
 		
 		targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-		if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+		if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_0")) {
 			texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 		}
 		else {
@@ -731,7 +731,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		if(texcoords1AccessorModel != null) {
 			texcoordsAccessorModel = texcoords1AccessorModel;
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_1")) {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -852,7 +852,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		if(colorsAccessorModel != null) {
 			colorsAccessorModel = obtainVec4ColorsAccessorModel(colorsAccessorModel);
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createColorMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createColorMorphTarget(morphTargets, targetAccessorDatas, "COLOR_0")) {
 				colorsAccessorModel = bindColorMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, colorsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -871,7 +871,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		AccessorModel texcoordsAccessorModel = attributes.get("TEXCOORD_0");
 		if(texcoordsAccessorModel != null) {
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_0")) {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -890,7 +890,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 			if(texcoords1AccessorModel != null) {
 				texcoordsAccessorModel = texcoords1AccessorModel;
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+				if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_1")) {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
@@ -953,7 +953,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		AccessorModel tangentsAccessorModel = obtainTangentsAccessorModel(normalsAccessorModel);
 		AccessorModel outputTangentsAccessorModel;
 		targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-		if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel, tangentsAccessorModel, normalTargetAccessorDatas)) {
+		if(createTangentMorphTarget(morphTargets, targetAccessorDatas, positionsAccessorModel, normalsAccessorModel, texcoordsAccessorModel, "TEXCOORD_0", tangentsAccessorModel, normalTargetAccessorDatas)) {
 			outputTangentsAccessorModel = obtainVec3FloatMorphedModel(nodeModel, meshModel, renderCommand, tangentsAccessorModel, targetAccessorDatas);
 		}
 		else {
@@ -1018,7 +1018,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		if(colorsAccessorModel != null) {
 			colorsAccessorModel = obtainVec4ColorsAccessorModel(colorsAccessorModel);
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createColorMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createColorMorphTarget(morphTargets, targetAccessorDatas, "COLOR_0")) {
 				colorsAccessorModel = bindColorMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, colorsAccessorModel, targetAccessorDatas);
 			}
 			else {
@@ -1035,7 +1035,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		}
 		
 		targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-		if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+		if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_0")) {
 			texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 		}
 		else {
@@ -1054,7 +1054,7 @@ public class RenderedGltfModelGL30 extends RenderedGltfModel {
 		if(texcoords1AccessorModel != null) {
 			texcoordsAccessorModel = texcoords1AccessorModel;
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
-			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas)) {
+			if(createTexcoordMorphTarget(morphTargets, targetAccessorDatas, "TEXCOORD_1")) {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
