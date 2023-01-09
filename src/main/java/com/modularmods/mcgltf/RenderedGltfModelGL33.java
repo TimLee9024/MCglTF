@@ -7,7 +7,6 @@ import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -210,7 +209,6 @@ public class RenderedGltfModelGL33 extends RenderedGltfModelGL40 {
 			else {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
 			}
-			GL13.glClientActiveTexture(COLOR_MAP_INDEX);
 			GL11.glTexCoordPointer(
 					texcoordsAccessorModel.getElementType().getNumComponents(),
 					texcoordsAccessorModel.getComponentType(),
@@ -427,7 +425,6 @@ public class RenderedGltfModelGL33 extends RenderedGltfModelGL40 {
 			else {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
 			}
-			GL13.glClientActiveTexture(COLOR_MAP_INDEX);
 			GL11.glTexCoordPointer(
 					texcoordsAccessorModel.getElementType().getNumComponents(),
 					texcoordsAccessorModel.getComponentType(),
@@ -635,7 +632,6 @@ public class RenderedGltfModelGL33 extends RenderedGltfModelGL40 {
 		else {
 			bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
 		}
-		GL13.glClientActiveTexture(COLOR_MAP_INDEX);
 		GL11.glTexCoordPointer(
 				texcoordsAccessorModel.getElementType().getNumComponents(),
 				texcoordsAccessorModel.getComponentType(),
@@ -847,7 +843,6 @@ public class RenderedGltfModelGL33 extends RenderedGltfModelGL40 {
 			else {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
 			}
-			GL13.glClientActiveTexture(COLOR_MAP_INDEX);
 			GL11.glTexCoordPointer(
 					texcoordsAccessorModel.getElementType().getNumComponents(),
 					texcoordsAccessorModel.getComponentType(),
@@ -1054,7 +1049,6 @@ public class RenderedGltfModelGL33 extends RenderedGltfModelGL40 {
 		else {
 			bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
 		}
-		GL13.glClientActiveTexture(COLOR_MAP_INDEX);
 		GL11.glTexCoordPointer(
 				texcoordsAccessorModel.getElementType().getNumComponents(),
 				texcoordsAccessorModel.getComponentType(),

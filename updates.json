@@ -1,7 +1,7 @@
 {
 	"homepage": "https://www.curseforge.com/minecraft/mc-mods/mcgltf/",
 	"1.16.5": {
-		"1.16.5-Forge-2.0.2.1": "Fix morph target generation.",
+		"1.16.5-Forge-2.0.3.0": "Support more JOINTS_n and WEIGHTS_n, and various bug fix.",
 		"1.16.5-Forge-2.0.2.0": "More proper solution to the POM of BSL Shaders.",
 		"1.16.5-Forge-2.0.0.0": "Update to meet Vanilla's minimun OpenGL requirement.",
 		"1.16.5-Forge-1.2.0.1": "Fix animation cause game crash, and an optimization forgot to reimplement in last update.",
@@ -12,7 +12,7 @@
 		"1.16.5-Forge-1.0.0.0": "Initial release"
 	},
 	"promos": {
-		"1.16.5-latest": "1.16.5-Forge-2.0.2.1",
-		"1.16.5-recommended": "1.16.5-Forge-2.0.2.1"
+		"1.16.5-latest": "1.16.5-Forge-2.0.3.0",
+		"1.16.5-recommended": "1.16.5-Forge-2.0.3.0"
 	}
 }

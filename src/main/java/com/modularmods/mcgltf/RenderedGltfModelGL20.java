@@ -8,7 +8,6 @@ import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 
@@ -138,8 +137,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-			AccessorModel texcoords1AccessorModelFinal;
+			renderCommand.add(() -> {
+				GL11.glTexCoordPointer(
+						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+						texcoordsAccessorModelFinal.getComponentType(),
+						texcoordsAccessorModelFinal.getByteStride(),
+						texcoordsAccessorModelFinal.getByteOffset());
+				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			});
 			
+			AccessorModel texcoords1AccessorModelFinal;
 			texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 			if(texcoordsAccessorModel != null) {
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -147,23 +154,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
-					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 				}
 				texcoords1AccessorModelFinal = texcoordsAccessorModel;
 			}
 			else {
 				texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 			}
-			
 			renderCommand.add(() -> {
-				GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-				GL11.glTexCoordPointer(
-						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-						texcoordsAccessorModelFinal.getComponentType(),
-						texcoordsAccessorModelFinal.getByteStride(),
-						texcoordsAccessorModelFinal.getByteOffset());
-				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-				
 				GL20.glVertexAttribPointer(
 						mc_midTexCoord,
 						texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -191,6 +189,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 			int count = positionsAccessorModel.getCount();
 			renderCommand.add(() -> GL11.glDrawArrays(mode, 0, count));
 		}
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		if(attributes.containsKey("TEXCOORD_0")) renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -292,8 +295,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-			AccessorModel texcoords1AccessorModelFinal;
+			renderCommand.add(() -> {
+				GL11.glTexCoordPointer(
+						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+						texcoordsAccessorModelFinal.getComponentType(),
+						texcoordsAccessorModelFinal.getByteStride(),
+						texcoordsAccessorModelFinal.getByteOffset());
+				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			});
 			
+			AccessorModel texcoords1AccessorModelFinal;
 			texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 			if(texcoordsAccessorModel != null) {
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -301,23 +312,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
-					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 				}
 				texcoords1AccessorModelFinal = texcoordsAccessorModel;
 			}
 			else {
 				texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 			}
-			
 			renderCommand.add(() -> {
-				GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-				GL11.glTexCoordPointer(
-						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-						texcoordsAccessorModelFinal.getComponentType(),
-						texcoordsAccessorModelFinal.getByteStride(),
-						texcoordsAccessorModelFinal.getByteOffset());
-				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-				
 				GL20.glVertexAttribPointer(
 						mc_midTexCoord,
 						texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -345,6 +347,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 			int count = positionsAccessorModel.getCount();
 			renderCommand.add(() -> GL11.glDrawArrays(mode, 0, count));
 		}
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		if(attributes.containsKey("TEXCOORD_0")) renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -435,8 +442,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 			bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 		}
 		AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-		AccessorModel texcoords1AccessorModelFinal;
+		renderCommand.add(() -> {
+			GL11.glTexCoordPointer(
+					texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+					texcoordsAccessorModelFinal.getComponentType(),
+					texcoordsAccessorModelFinal.getByteStride(),
+					texcoordsAccessorModelFinal.getByteOffset());
+			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+		});
 		
+		AccessorModel texcoords1AccessorModelFinal;
 		texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 		if(texcoordsAccessorModel != null) {
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -444,23 +459,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
-				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			texcoords1AccessorModelFinal = texcoordsAccessorModel;
 		}
 		else {
 			texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 		}
-		
 		renderCommand.add(() -> {
-			GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-			GL11.glTexCoordPointer(
-					texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-					texcoordsAccessorModelFinal.getComponentType(),
-					texcoordsAccessorModelFinal.getByteStride(),
-					texcoordsAccessorModelFinal.getByteOffset());
-			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-			
 			GL20.glVertexAttribPointer(
 					mc_midTexCoord,
 					texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -474,6 +480,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		int mode = meshPrimitiveModel.getMode();
 		int count = positionsAccessorModel.getCount();
 		renderCommand.add(() -> GL11.glDrawArrays(mode, 0, count));
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -584,8 +595,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-			AccessorModel texcoords1AccessorModelFinal;
+			renderCommand.add(() -> {
+				GL11.glTexCoordPointer(
+						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+						texcoordsAccessorModelFinal.getComponentType(),
+						texcoordsAccessorModelFinal.getByteStride(),
+						texcoordsAccessorModelFinal.getByteOffset());
+				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			});
 			
+			AccessorModel texcoords1AccessorModelFinal;
 			texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 			if(texcoordsAccessorModel != null) {
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -593,23 +612,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
-					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 				}
 				texcoords1AccessorModelFinal = texcoordsAccessorModel;
 			}
 			else {
 				texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 			}
-			
 			renderCommand.add(() -> {
-				GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-				GL11.glTexCoordPointer(
-						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-						texcoordsAccessorModelFinal.getComponentType(),
-						texcoordsAccessorModelFinal.getByteStride(),
-						texcoordsAccessorModelFinal.getByteOffset());
-				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-				
 				GL20.glVertexAttribPointer(
 						mc_midTexCoord,
 						texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -624,6 +634,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		int mode = meshPrimitiveModel.getMode();
 		int count = positionsAccessorModel.getCount();
 		renderCommand.add(() -> GL11.glDrawArrays(mode, 0, count));
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		if(attributes.containsKey("TEXCOORD_0")) renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -726,8 +741,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 			bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 		}
 		AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-		AccessorModel texcoords1AccessorModelFinal;
+		renderCommand.add(() -> {
+			GL11.glTexCoordPointer(
+					texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+					texcoordsAccessorModelFinal.getComponentType(),
+					texcoordsAccessorModelFinal.getByteStride(),
+					texcoordsAccessorModelFinal.getByteOffset());
+			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+		});
 		
+		AccessorModel texcoords1AccessorModelFinal;
 		texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 		if(texcoordsAccessorModel != null) {
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -735,23 +758,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
-				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			texcoords1AccessorModelFinal = texcoordsAccessorModel;
 		}
 		else {
 			texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 		}
-		
 		renderCommand.add(() -> {
-			GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-			GL11.glTexCoordPointer(
-					texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-					texcoordsAccessorModelFinal.getComponentType(),
-					texcoordsAccessorModelFinal.getByteStride(),
-					texcoordsAccessorModelFinal.getByteOffset());
-			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-			
 			GL20.glVertexAttribPointer(
 					mc_midTexCoord,
 					texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -765,6 +779,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		int mode = meshPrimitiveModel.getMode();
 		int count = positionsAccessorModel.getCount();
 		renderCommand.add(() -> GL11.glDrawArrays(mode, 0, count));
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -799,9 +818,7 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		}
 		
 		int pointCount = positionsAccessorModel.getCount();
-		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices,
-				AccessorDatas.createInt(obtainUnsignedJointsModel(attributes.get("JOINTS_0"))),
-				AccessorDatas.createFloat(obtainDequantizedWeightsModel(attributes.get("WEIGHTS_0"))),
+		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices, attributes,
 				AccessorDatas.createFloat(positionsAccessorModel),
 				AccessorDatas.createFloat(normalsAccessorModel),
 				AccessorDatas.createFloat(tangentsAccessorModel),
@@ -891,8 +908,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-			AccessorModel texcoords1AccessorModelFinal;
+			renderCommand.add(() -> {
+				GL11.glTexCoordPointer(
+						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+						texcoordsAccessorModelFinal.getComponentType(),
+						texcoordsAccessorModelFinal.getByteStride(),
+						texcoordsAccessorModelFinal.getByteOffset());
+				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			});
 			
+			AccessorModel texcoords1AccessorModelFinal;
 			texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 			if(texcoordsAccessorModel != null) {
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -900,23 +925,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
-					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 				}
 				texcoords1AccessorModelFinal = texcoordsAccessorModel;
 			}
 			else {
 				texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 			}
-			
 			renderCommand.add(() -> {
-				GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-				GL11.glTexCoordPointer(
-						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-						texcoordsAccessorModelFinal.getComponentType(),
-						texcoordsAccessorModelFinal.getByteStride(),
-						texcoordsAccessorModelFinal.getByteOffset());
-				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-				
 				GL20.glVertexAttribPointer(
 						mc_midTexCoord,
 						texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -943,6 +959,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		else {
 			renderCommand.add(() -> GL11.glDrawArrays(mode, 0, pointCount));
 		}
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		if(attributes.containsKey("TEXCOORD_0")) renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -973,9 +994,7 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		}
 		
 		int pointCount = positionsAccessorModel.getCount();
-		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices,
-				AccessorDatas.createInt(obtainUnsignedJointsModel(attributes.get("JOINTS_0"))),
-				AccessorDatas.createFloat(obtainDequantizedWeightsModel(attributes.get("WEIGHTS_0"))),
+		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices, attributes,
 				AccessorDatas.createFloat(positionsAccessorModel),
 				AccessorDatas.createFloat(normalsAccessorModel),
 				AccessorDatas.createFloat(tangentsAccessorModel),
@@ -1065,8 +1084,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-			AccessorModel texcoords1AccessorModelFinal;
+			renderCommand.add(() -> {
+				GL11.glTexCoordPointer(
+						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+						texcoordsAccessorModelFinal.getComponentType(),
+						texcoordsAccessorModelFinal.getByteStride(),
+						texcoordsAccessorModelFinal.getByteOffset());
+				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			});
 			
+			AccessorModel texcoords1AccessorModelFinal;
 			texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 			if(texcoordsAccessorModel != null) {
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -1074,23 +1101,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
-					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 				}
 				texcoords1AccessorModelFinal = texcoordsAccessorModel;
 			}
 			else {
 				texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 			}
-			
 			renderCommand.add(() -> {
-				GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-				GL11.glTexCoordPointer(
-						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-						texcoordsAccessorModelFinal.getComponentType(),
-						texcoordsAccessorModelFinal.getByteStride(),
-						texcoordsAccessorModelFinal.getByteOffset());
-				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-				
 				GL20.glVertexAttribPointer(
 						mc_midTexCoord,
 						texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -1117,6 +1135,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		else {
 			renderCommand.add(() -> GL11.glDrawArrays(mode, 0, pointCount));
 		}
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		if(attributes.containsKey("TEXCOORD_0")) renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -1156,9 +1179,7 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		}
 		
 		int pointCount = positionsAccessorModel.getCount();
-		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices,
-				AccessorDatas.createInt(obtainUnsignedJointsModel(attributes.get("JOINTS_0"))),
-				AccessorDatas.createFloat(obtainDequantizedWeightsModel(attributes.get("WEIGHTS_0"))),
+		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices, attributes,
 				AccessorDatas.createFloat(positionsAccessorModel),
 				AccessorDatas.createFloat(normalsAccessorModel),
 				AccessorDatas.createFloat(tangentsAccessorModel),
@@ -1246,8 +1267,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 			bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 		}
 		AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-		AccessorModel texcoords1AccessorModelFinal;
+		renderCommand.add(() -> {
+			GL11.glTexCoordPointer(
+					texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+					texcoordsAccessorModelFinal.getComponentType(),
+					texcoordsAccessorModelFinal.getByteStride(),
+					texcoordsAccessorModelFinal.getByteOffset());
+			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+		});
 		
+		AccessorModel texcoords1AccessorModelFinal;
 		texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 		if(texcoordsAccessorModel != null) {
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -1255,23 +1284,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
-				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			texcoords1AccessorModelFinal = texcoordsAccessorModel;
 		}
 		else {
 			texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 		}
-		
 		renderCommand.add(() -> {
-			GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-			GL11.glTexCoordPointer(
-					texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-					texcoordsAccessorModelFinal.getComponentType(),
-					texcoordsAccessorModelFinal.getByteStride(),
-					texcoordsAccessorModelFinal.getByteOffset());
-			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-			
 			GL20.glVertexAttribPointer(
 					mc_midTexCoord,
 					texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -1284,6 +1304,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		
 		int mode = meshPrimitiveModel.getMode();
 		renderCommand.add(() -> GL11.glDrawArrays(mode, 0, pointCount));
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -1313,9 +1338,7 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		}
 		
 		int pointCount = positionsAccessorModel.getCount();
-		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices,
-				AccessorDatas.createInt(obtainUnsignedJointsModel(attributes.get("JOINTS_0"))),
-				AccessorDatas.createFloat(obtainDequantizedWeightsModel(attributes.get("WEIGHTS_0"))),
+		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices, attributes,
 				AccessorDatas.createFloat(positionsAccessorModel),
 				AccessorDatas.createFloat(normalsAccessorModel),
 				AccessorDatas.createFloat(tangentsAccessorModel),
@@ -1405,8 +1428,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-			AccessorModel texcoords1AccessorModelFinal;
+			renderCommand.add(() -> {
+				GL11.glTexCoordPointer(
+						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+						texcoordsAccessorModelFinal.getComponentType(),
+						texcoordsAccessorModelFinal.getByteStride(),
+						texcoordsAccessorModelFinal.getByteOffset());
+				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			});
 			
+			AccessorModel texcoords1AccessorModelFinal;
 			texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 			if(texcoordsAccessorModel != null) {
 				targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -1414,23 +1445,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 					texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 				}
 				else {
-					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+					bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 				}
 				texcoords1AccessorModelFinal = texcoordsAccessorModel;
 			}
 			else {
 				texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 			}
-			
 			renderCommand.add(() -> {
-				GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-				GL11.glTexCoordPointer(
-						texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-						texcoordsAccessorModelFinal.getComponentType(),
-						texcoordsAccessorModelFinal.getByteStride(),
-						texcoordsAccessorModelFinal.getByteOffset());
-				GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-				
 				GL20.glVertexAttribPointer(
 						mc_midTexCoord,
 						texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -1444,6 +1466,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		
 		int mode = meshPrimitiveModel.getMode();
 		renderCommand.add(() -> GL11.glDrawArrays(mode, 0, pointCount));
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		if(attributes.containsKey("TEXCOORD_0")) renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	@Override
@@ -1479,9 +1506,7 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		}
 		
 		int pointCount = positionsAccessorModel.getCount();
-		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices,
-				AccessorDatas.createInt(obtainUnsignedJointsModel(attributes.get("JOINTS_0"))),
-				AccessorDatas.createFloat(obtainDequantizedWeightsModel(attributes.get("WEIGHTS_0"))),
+		List<Runnable> skinningCommands = createSoftwareSkinningCommands(pointCount, jointMatrices, attributes,
 				AccessorDatas.createFloat(positionsAccessorModel),
 				AccessorDatas.createFloat(normalsAccessorModel),
 				AccessorDatas.createFloat(tangentsAccessorModel),
@@ -1569,8 +1594,16 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 			bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 		}
 		AccessorModel texcoordsAccessorModelFinal = texcoordsAccessorModel;
-		AccessorModel texcoords1AccessorModelFinal;
+		renderCommand.add(() -> {
+			GL11.glTexCoordPointer(
+					texcoordsAccessorModelFinal.getElementType().getNumComponents(),
+					texcoordsAccessorModelFinal.getComponentType(),
+					texcoordsAccessorModelFinal.getByteStride(),
+					texcoordsAccessorModelFinal.getByteOffset());
+			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+		});
 		
+		AccessorModel texcoords1AccessorModelFinal;
 		texcoordsAccessorModel = attributes.get("TEXCOORD_1");
 		if(texcoordsAccessorModel != null) {
 			targetAccessorDatas = new ArrayList<AccessorFloatData>(morphTargets.size());
@@ -1578,23 +1611,14 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 				texcoordsAccessorModel = bindTexcoordMorphed(gltfRenderData, nodeModel, meshModel, renderCommand, texcoordsAccessorModel, targetAccessorDatas);
 			}
 			else {
-				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel());
+				bindArrayBufferViewModel(gltfRenderData, texcoordsAccessorModel.getBufferViewModel(), renderCommand);
 			}
 			texcoords1AccessorModelFinal = texcoordsAccessorModel;
 		}
 		else {
 			texcoords1AccessorModelFinal = texcoordsAccessorModelFinal;
 		}
-		
 		renderCommand.add(() -> {
-			GL13.glClientActiveTexture(COLOR_MAP_INDEX);
-			GL11.glTexCoordPointer(
-					texcoordsAccessorModelFinal.getElementType().getNumComponents(),
-					texcoordsAccessorModelFinal.getComponentType(),
-					texcoordsAccessorModelFinal.getByteStride(),
-					texcoordsAccessorModelFinal.getByteOffset());
-			GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-			
 			GL20.glVertexAttribPointer(
 					mc_midTexCoord,
 					texcoords1AccessorModelFinal.getElementType().getNumComponents(),
@@ -1607,6 +1631,11 @@ public class RenderedGltfModelGL20 extends RenderedGltfModelGL30 {
 		
 		int mode = meshPrimitiveModel.getMode();
 		renderCommand.add(() -> GL11.glDrawArrays(mode, 0, pointCount));
+		if(attributes.containsKey("COLOR_0")) renderCommand.add(() -> GL11.glDisableClientState(GL11.GL_COLOR_ARRAY));
+		renderCommand.add(() -> {
+			GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+			GL20.glDisableVertexAttribArray(RenderedGltfModel.mc_midTexCoord);
+		});
 	}
 	
 	public void bindArrayBufferViewModel(List<Runnable> gltfRenderData, BufferViewModel bufferViewModel, List<Runnable> renderCommand) {
