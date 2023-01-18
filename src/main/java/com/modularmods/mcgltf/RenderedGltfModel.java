@@ -98,8 +98,8 @@ public class RenderedGltfModel {
 	protected static final Runnable shaderModDefaultMaterialCommand;
 	
 	public static ShaderInstance CURRENT_SHADER_INSTANCE;
-	public static Matrix4f CURRENT_POSE;
-	public static Matrix3f CURRENT_NORMAL;
+	protected static Matrix4f CURRENT_POSE;
+	protected static Matrix3f CURRENT_NORMAL;
 	public static Vector3f LIGHT0_DIRECTION;
 	public static Vector3f LIGHT1_DIRECTION;
 	
@@ -5050,7 +5050,7 @@ public class RenderedGltfModel {
 		return baseAccessorModel;
 	}
 	
-	public static float[] findGlobalTransform(NodeModel nodeModel) {
+	protected static float[] findGlobalTransform(NodeModel nodeModel) {
 		float[] found = NODE_GLOBAL_TRANSFORMATION_LOOKUP_CACHE.get(nodeModel);
 		if(found != null) {
 			return found;
@@ -5100,7 +5100,7 @@ public class RenderedGltfModel {
 	 * @param value The value
 	 * @return The FloatBuffer
 	 */
-	public static FloatBuffer putFloatBuffer(float value[])
+	protected static FloatBuffer putFloatBuffer(float value[])
 	{
 		int total = value.length;
 		if (uniformFloatBuffer == null || uniformFloatBuffer.capacity() < total)
@@ -5112,6 +5112,14 @@ public class RenderedGltfModel {
 		uniformFloatBuffer.put(value);
 		uniformFloatBuffer.flip();
 		return uniformFloatBuffer;
+	}
+	
+	public static void setCurrentPose(Matrix4f currentPose) {
+		CURRENT_POSE = currentPose;
+	}
+	
+	public static void setCurrentNormal(Matrix3f currentNormal) {
+		CURRENT_NORMAL = currentNormal;
 	}
 
 }
